@@ -1,4 +1,4 @@
-## 1.0.0
+## 0.0.1
 
 - Initial release
 - Full SDK bridge for Android (1.0.5) and iOS (1.0.3)
