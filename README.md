@@ -5,7 +5,7 @@
 [![pub version](https://img.shields.io/pub/v/altcraft_sdk?style=flat-square)](https://pub.dev/packages/altcraft_sdk)
 [![Flutter](https://img.shields.io/badge/Flutter-3.27%2B-blue?style=flat-square)](https://flutter.dev/)
 [![Platforms](https://img.shields.io/badge/Platforms-Android_%7C_iOS-green?style=flat-square)](#)
-[![Push Providers](https://img.shields.io/badge/Push-FCM_%7C_APNs-orange?style=flat-square)](#)
+[![Push Providers](https://img.shields.io/badge/Push-Firebase_%7C_APNs_%7C_Huawei_%7C_RuStore-orange?style=flat-square)](#)
 
 Altcraft Flutter SDK is a bridge to the native **Altcraft Mobile SDK** for Android and iOS. The SDK automates push notification delivery, event submission, request retries, and supports flexible workflows with JWT or role-based tokens.
 
@@ -20,7 +20,7 @@ Altcraft Flutter SDK is a bridge to the native **Altcraft Mobile SDK** for Andro
 * [x] Mobile events registration.
 * [x] Update profile fields.
 * [x] Automatic retry of failed requests.
-* [x] Support for push providers: Firebase FCM (Android), APNs (iOS).
+* [x] Support for push providers: Firebase, Huawei, and RuStore on Android; APNs, Firebase, and Huawei on iOS.
 * [x] Secure requests using JWT and flexible identifier matching.
 * [x] Support for rToken for simple subscription scenarios.
 * [x] SDK data cleanup and background tasks termination.
@@ -67,7 +67,9 @@ Profile lookup is limited to the push token identifier.
 * Dart 3.6+.
 * Android 7.1+ (API 25).
 * iOS 13.0+.
-* Push provider integrated in the host app (FCM for Android, APNs for iOS).
+* Push provider integrated in the host app:
+  * Android: Firebase, Huawei, or RuStore.
+  * iOS: APNs, Firebase, or Huawei.
 
 ---
 
@@ -82,8 +84,17 @@ Detailed information on SDK setup, functionality, and usage is available on the 
 
 **Provider Setup**
 
-- [FCM](https://guides.altcraft.com/en/developer-guide/sdk/mobile/android/providers/fcm/)
+**Android**
+
+- [Firebase](https://guides.altcraft.com/en/developer-guide/sdk/mobile/android/providers/fcm/)
+- [Huawei](https://guides.altcraft.com/en/developer-guide/sdk/mobile/android/providers/huawei/)
+- [RuStore](https://guides.altcraft.com/en/developer-guide/sdk/mobile/android/providers/rustore/)
+
+**iOS**
+
 - [APNs](https://guides.altcraft.com/en/developer-guide/sdk/mobile/ios/providers/apns/)
+- [Firebase](https://guides.altcraft.com/en/developer-guide/sdk/mobile/ios/providers/firebase/)
+- [Huawei](https://guides.altcraft.com/en/developer-guide/sdk/mobile/ios/providers/huawei/)
 
 ---
 
@@ -139,4 +150,5 @@ You may obtain a copy of the License at https://www.apache.org/licenses/LICENSE-
 **MIT License**
 
 * [plugin_platform_interface](https://pub.dev/packages/plugin_platform_interface)
+
 
