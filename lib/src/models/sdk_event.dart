@@ -30,23 +30,30 @@ class SdkEvent {
   /// Creates an SdkEvent from a Map (received via EventChannel).
   factory SdkEvent.fromMap(Map<dynamic, dynamic> map) {
     return SdkEvent(
-      function: map['function'] as String? ?? '',
-      code: map['code'] as int?,
-      message: map['message'] as String? ?? '',
-      type: map['type'] as String? ?? 'event',
-      value: map['value'] != null ? Map<String, dynamic>.from(map['value'] as Map) : null,
-      timestamp: map['timestamp'] as String?,
+      function: map['function']?.toString() ?? '',
+      code: _safeInt(map['code']),
+      message: map['message']?.toString() ?? '',
+      type: map['type']?.toString() ?? 'event',
+      value: map['value'] is Map ? Map<String, dynamic>.from(map['value'] as Map) : null,
+      timestamp: map['timestamp']?.toString(),
     );
+  }
+
+  static int? _safeInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value.toString());
   }
 
   factory SdkEvent.fromJson(Map<String, dynamic> json) {
     return SdkEvent(
-      function: json['function'] as String? ?? '',
-      code: json['code'] as int?,
-      message: json['message'] as String? ?? '',
-      type: json['type'] as String? ?? 'event',
-      value: json['value'] != null ? Map<String, dynamic>.from(json['value'] as Map) : null,
-      timestamp: json['timestamp'] as String?,
+      function: json['function']?.toString() ?? '',
+      code: _safeInt(json['code']),
+      message: json['message']?.toString() ?? '',
+      type: json['type']?.toString() ?? 'event',
+      value: json['value'] is Map ? Map<String, dynamic>.from(json['value'] as Map) : null,
+      timestamp: json['timestamp']?.toString(),
     );
   }
 

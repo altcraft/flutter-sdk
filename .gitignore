@@ -24,11 +24,16 @@ example/.dart_tool/
 example/.idea/
 example/android/.idea/
 example/android/.gradle/
-example/android/local.properties/
+example/android/local.properties
 example/android/app/build/
 example/ios/Pods/
 example/ios/.symlinks/
 example/ios/Flutter/ephemeral/
+example/ios/Flutter/Generated.xcconfig
+example/ios/Flutter/flutter_export_environment.sh
+
+**/.DS_Store
+__MACOSX/
 
 pubspec.lock
 example/pubspec.lock

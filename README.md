@@ -30,7 +30,7 @@ Altcraft Flutter SDK is a bridge to the native **Altcraft Mobile SDK** for Andro
 
 ## Dependency
 
-`altcraft_sdk:0.0.1`
+`altcraft_sdk:1.0.0`
 
 ---
 
@@ -64,14 +64,14 @@ Profile lookup is limited to the push token identifier.
 ## Requirements
 
 * Flutter 3.27+.
-* Dart 3.0+.
+* Dart 3.6+.
 * Android 7.1+ (API 25).
 * iOS 13.0+.
 * Push provider integrated in the host app (FCM for Android, APNs for iOS).
 
 ---
 
-## Documentations
+## Documentation
 
 Detailed information on SDK setup, functionality, and usage is available on the Altcraft documentation portal. You can navigate to the required section using the links below:
 
@@ -88,6 +88,8 @@ Detailed information on SDK setup, functionality, and usage is available on the 
 ---
 
 ## License
+
+This package is distributed under the Altcraft End User License Agreement (EULA). See the [LICENSE](LICENSE) file for the full license text.
 
 ### EULA
 
@@ -128,8 +130,8 @@ Copyright © 2026 Altcraft LLC. All rights reserved.
 ### Third-party libraries and licenses
 
   **Apache License 2.0**
-Licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
-You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+Licensed under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0).
+You may obtain a copy of the License at https://www.apache.org/licenses/LICENSE-2.0
 
 * [Flutter](https://github.com/flutter/flutter)
 * [Dart](https://dart.dev/)
@@ -137,3 +139,4 @@ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2
 **MIT License**
 
 * [plugin_platform_interface](https://pub.dev/packages/plugin_platform_interface)
+

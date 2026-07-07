@@ -33,6 +33,9 @@ class Subscription {
   /// CC data (for type 'cc_data').
   final Map<String, dynamic>? ccData;
 
+  /// CC channel name (for type 'cc_data', e.g. 'telegram_bot').
+  final String? ccChannel;
+
   const Subscription({
     required this.type,
     required this.resourceId,
@@ -45,6 +48,7 @@ class Subscription {
     this.customFields,
     this.cats,
     this.ccData,
+    this.ccChannel,
   });
 
   /// Email subscription factory.
@@ -109,9 +113,32 @@ class Subscription {
     );
   }
 
+  /// Custom channel data subscription factory.
+  factory Subscription.ccData({
+    required int resourceId,
+    required String channel,
+    required Map<String, dynamic> ccData,
+    String? status,
+    int? priority,
+    Map<String, dynamic>? customFields,
+    List<dynamic>? cats,
+  }) {
+    return Subscription(
+      type: 'cc_data',
+      resourceId: resourceId,
+      ccData: ccData,
+      ccChannel: channel,
+      status: status,
+      priority: priority,
+      customFields: customFields,
+      cats: cats,
+    );
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'type': type,
+      'channel': type,
       'resource_id': resourceId,
       if (status != null) 'status': status,
       if (priority != null) 'priority': priority,
@@ -122,6 +149,7 @@ class Subscription {
       if (customFields != null) 'custom_fields': customFields,
       if (cats != null) 'cats': cats,
       if (ccData != null) 'cc_data': ccData,
+      if (ccChannel != null) 'cc_channel': ccChannel,
     };
   }
 }

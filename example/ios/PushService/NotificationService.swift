@@ -11,7 +11,7 @@ import UserNotifications
 class NotificationService: UNNotificationServiceExtension {
     
     /// - important! Set app groups identifier.
-    let appGroupID = "group.your.flutter.app"
+    let appGroupID = "group.altcraft.flutter.app"
     
     /// - important! Set the provider to JWT if you are using JWT authentication.
     let jwtProvider = JWTProvider()

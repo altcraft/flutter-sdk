@@ -38,7 +38,7 @@ abstract class AltcraftSdkPlatformInterface extends PlatformInterface {
   // ---- Push Subscription ----
 
   /// Subscribes to push notifications.
-  void pushSubscribe({
+  Future<void> pushSubscribe({
     bool? sync,
     Map<String, dynamic>? profileFields,
     Map<String, dynamic>? customFields,
@@ -50,7 +50,7 @@ abstract class AltcraftSdkPlatformInterface extends PlatformInterface {
   }
 
   /// Suspends push subscription.
-  void pushSuspend({
+  Future<void> pushSuspend({
     bool? sync,
     Map<String, dynamic>? profileFields,
     Map<String, dynamic>? customFields,
@@ -62,7 +62,7 @@ abstract class AltcraftSdkPlatformInterface extends PlatformInterface {
   }
 
   /// Unsubscribes from push notifications.
-  void pushUnSubscribe({
+  Future<void> pushUnSubscribe({
     bool? sync,
     Map<String, dynamic>? profileFields,
     Map<String, dynamic>? customFields,
@@ -98,6 +98,8 @@ abstract class AltcraftSdkPlatformInterface extends PlatformInterface {
   // ---- SDK Events ----
 
   /// Subscribes to SDK events stream.
+  ///
+  /// Returns a broadcast stream shared across all callers.
   Stream<SdkEvent> subscribeToEvents() {
     throw UnimplementedError('subscribeToEvents() has not been implemented.');
   }
@@ -110,7 +112,7 @@ abstract class AltcraftSdkPlatformInterface extends PlatformInterface {
   // ---- Mobile Events ----
 
   /// Sends a mobile event to the Altcraft platform.
-  void mobileEvent({
+  Future<void> mobileEvent({
     required String sid,
     required String eventName,
     String? sendMessageId,
@@ -146,7 +148,7 @@ abstract class AltcraftSdkPlatformInterface extends PlatformInterface {
   // ---- Push Handling (Android) ----
 
   /// Forwards a push payload to the SDK (Android).
-  void takePush(Map<String, String> message) {
+  Future<void> takePush(Map<String, String> message) {
     throw UnimplementedError('takePush() has not been implemented.');
   }
 
@@ -160,26 +162,30 @@ abstract class AltcraftSdkPlatformInterface extends PlatformInterface {
   // ---- Push Events (Android) ----
 
   /// Reports push delivery (Android).
-  void deliveryEvent(Map<String, String>? message, String? messageUID) {
+  Future<void> deliveryEvent(Map<String, String>? message, String? messageUID) {
     throw UnimplementedError('deliveryEvent() has not been implemented.');
   }
 
   /// Reports push open (Android).
-  void openEvent(Map<String, String>? message, String? messageUID) {
+  Future<void> openEvent(Map<String, String>? message, String? messageUID) {
     throw UnimplementedError('openEvent() has not been implemented.');
   }
 
   // ---- UserDefaults (iOS) ----
 
   /// Stores a value in native storage (UserDefaults on iOS, SharedPreferences on Android).
-  void setUserDefaultsValue(String? suiteName, String key, dynamic value) {
+  ///
+  /// On iOS, [suiteName] selects the App Group UserDefaults suite.
+  /// On Android, [suiteName] is ignored; values are stored in the plugin's
+  /// private SharedPreferences.
+  Future<void> setUserDefaultsValue(String? suiteName, String key, String? value) {
     throw UnimplementedError('setUserDefaultsValue() has not been implemented.');
   }
 
   // ---- Profile ----
 
   /// Updates profile fields on the server.
-  void updateProfileFields({
+  Future<void> updateProfileFields({
     Map<String, dynamic>? profileFields,
     bool? skipTriggers,
   }) {
@@ -213,14 +219,14 @@ abstract class AltcraftSdkPlatformInterface extends PlatformInterface {
   // ---- Session (Android) ----
 
   /// Unlocks initial operations in the current session (Android).
-  void unlockInitialOperationsInThisSession() {
+  Future<void> unlockInitialOperationsInThisSession() {
     throw UnimplementedError('unlockInitialOperationsInThisSession() has not been implemented.');
   }
 
   // ---- App Group (iOS) ----
 
   /// Sets the App Group for UserDefaults (iOS).
-  void setAppGroup(String? groupName) {
+  Future<void> setAppGroup(String? groupName) {
     throw UnimplementedError('setAppGroup() has not been implemented.');
   }
 }

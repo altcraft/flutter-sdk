@@ -30,7 +30,7 @@ android {
 
     defaultConfig {
         applicationId = "com.altcraft.flutter.app"
-        minSdkVersion = flutter.minSdkVersion
+        minSdkVersion = 25
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName

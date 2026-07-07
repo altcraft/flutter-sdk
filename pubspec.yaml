@@ -1,6 +1,6 @@
 name: altcraft_sdk
-description: Flutter SDK for Altcraft push notification platform. Supports Android and iOS with native SDK integration.
-version: 0.0.1
+description: Flutter SDK for Altcraft push notification platform. Supports Android (minSdk 25+) and iOS (13.0+) with native SDK integration.
+version: 1.0.0
 homepage: https://github.com/altcraft/flutter-sdk
 repository: https://github.com/altcraft/flutter-sdk
 issue_tracker: https://github.com/altcraft/flutter-sdk/issues

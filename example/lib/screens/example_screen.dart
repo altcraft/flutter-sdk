@@ -38,7 +38,7 @@ class _ExampleScreenState extends State<ExampleScreen> {
     if (_imageUrlController.text.trim().isNotEmpty) msg['image_url'] = _imageUrlController.text.trim();
     if (_buttonsController.text.trim().isNotEmpty) msg['buttons'] = _buttonsController.text.trim();
 
-    AltcraftSDK.takePush(msg);
+    await AltcraftSDK.takePush(msg);
     setState(() => _result = 'Sent: $msg');
   }
 

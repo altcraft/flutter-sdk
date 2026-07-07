@@ -5,9 +5,15 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('AltcraftSDK Platform Interface', () {
-    test('platform interface is settable', () {
+    test('platform interface is settable via AltcraftSDK.platform', () {
       final mock = _MockPlatform();
-      AltcraftSdkPlatformInterface.instance = mock;
+      AltcraftSDK.platform = mock;
+      expect(AltcraftSDK.platform, equals(mock));
+    });
+
+    test('setting AltcraftSDK.platform also updates instance', () {
+      final mock = _MockPlatform();
+      AltcraftSDK.platform = mock;
       expect(AltcraftSdkPlatformInterface.instance, equals(mock));
     });
   });
@@ -80,10 +86,24 @@ void main() {
       expect(sub.toMap()['type'], 'email');
     });
 
+    test('email toMap includes channel field', () {
+      final sub = Subscription.email(resourceId: 1, email: 'test@test.com');
+      final map = sub.toMap();
+      expect(map['channel'], 'email');
+      expect(map['type'], 'email');
+    });
+
     test('sms factory creates correct type', () {
       final sub = Subscription.sms(resourceId: 1, phone: '+1234567890');
       expect(sub.type, 'sms');
       expect(sub.phone, '+1234567890');
+    });
+
+    test('sms toMap includes channel field', () {
+      final sub = Subscription.sms(resourceId: 1, phone: '+1234567890');
+      final map = sub.toMap();
+      expect(map['channel'], 'sms');
+      expect(map['type'], 'sms');
     });
 
     test('push factory creates correct type', () {
@@ -94,6 +114,56 @@ void main() {
       );
       expect(sub.type, 'push');
       expect(sub.provider, 'ios-apns');
+    });
+
+    test('push toMap includes channel field', () {
+      final sub = Subscription.push(
+        resourceId: 1,
+        provider: 'ios-apns',
+        subscriptionId: 'sub-1',
+      );
+      final map = sub.toMap();
+      expect(map['channel'], 'push');
+      expect(map['type'], 'push');
+    });
+
+    test('ccData factory creates correct type', () {
+      final sub = Subscription.ccData(
+        resourceId: 1,
+        channel: 'telegram_bot',
+        ccData: {'chat_id': 12345},
+      );
+      expect(sub.type, 'cc_data');
+      expect(sub.ccChannel, 'telegram_bot');
+      expect(sub.ccData, {'chat_id': 12345});
+    });
+
+    test('ccData toMap includes all required fields', () {
+      final sub = Subscription.ccData(
+        resourceId: 1,
+        channel: 'telegram_bot',
+        ccData: {'chat_id': 12345},
+      );
+      final map = sub.toMap();
+      expect(map['type'], 'cc_data');
+      expect(map['channel'], 'cc_data');
+      expect(map['cc_channel'], 'telegram_bot');
+      expect(map['cc_data'], {'chat_id': 12345});
+      expect(map['resource_id'], 1);
+    });
+
+    test('toMap includes resource_id', () {
+      final sub = Subscription.email(resourceId: 42, email: 'test@test.com');
+      final map = sub.toMap();
+      expect(map['resource_id'], 42);
+    });
+
+    test('toMap omits null fields', () {
+      final sub = Subscription.email(resourceId: 1, email: 'test@test.com');
+      final map = sub.toMap();
+      expect(map['phone'], isNull);
+      expect(map['provider'], isNull);
+      expect(map['cc_data'], isNull);
     });
   });
 
@@ -117,13 +187,46 @@ void main() {
   });
 
   group('ResponseWithHttpCode', () {
-    test('fromMap parses correctly', () {
+    test('fromMap parses snake_case correctly', () {
       final response = ResponseWithHttpCode.fromMap({
-        'httpCode': 200,
+        'http_code': 200,
         'response': {'profile': {}},
       });
       expect(response.httpCode, 200);
       expect(response.response?['profile'], isNotNull);
+    });
+
+    test('fromMap parses camelCase correctly', () {
+      final response = ResponseWithHttpCode.fromMap({
+        'httpCode': 201,
+        'response': {'error': null},
+      });
+      expect(response.httpCode, 201);
+      expect(response.response?['error'], isNull);
+    });
+
+    test('fromMap prefers snake_case over camelCase', () {
+      final response = ResponseWithHttpCode.fromMap({
+        'http_code': 200,
+        'httpCode': 404,
+        'response': {'ok': true},
+      });
+      expect(response.httpCode, 200);
+    });
+
+    test('fromMap handles null response', () {
+      final response = ResponseWithHttpCode.fromMap({
+        'http_code': 500,
+        'response': null,
+      });
+      expect(response.httpCode, 500);
+      expect(response.response, isNull);
+    });
+
+    test('fromMap handles missing fields', () {
+      final response = ResponseWithHttpCode.fromMap({});
+      expect(response.httpCode, 0);
+      expect(response.response, isNull);
     });
   });
 

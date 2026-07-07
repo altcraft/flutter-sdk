@@ -9,7 +9,7 @@ import UserNotifications
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
-        AltcraftSDK.shared.setAppGroup(groupName: "group.your.flutter.app")
+        AltcraftSDK.shared.setAppGroup(groupName: "group.altcraft.flutter.app")
         AltcraftSDK.shared.setJWTProvider(provider: JWTProvider())
         AltcraftSDK.shared.pushTokenFunctions.setAPNSTokenProvider(APNSProvider())
         AltcraftSDK.shared.notificationManager.registerForPushNotifications(for: application)

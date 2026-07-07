@@ -28,8 +28,14 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.PluginRegistry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import androidx.core.content.edit
 
 /**
@@ -54,6 +60,7 @@ class AltcraftSdkPlugin : FlutterPlugin, ActivityAware {
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+        bridge?.dispose()
         methodChannel?.setMethodCallHandler(null)
         methodChannel = null
         eventChannel?.setStreamHandler(null)
@@ -66,7 +73,7 @@ class AltcraftSdkPlugin : FlutterPlugin, ActivityAware {
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
-        // Activity reattached automatically after this
+        bridge?.onActivityDetached()
     }
 
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
@@ -89,7 +96,8 @@ class SdkBridge(
     private val context: Context,
 ) : MethodChannel.MethodCallHandler, EventChannel.StreamHandler {
     private var eventSink: EventChannel.EventSink? = null
-    private val scope = CoroutineScope(Dispatchers.IO)
+    private val pluginJob = SupervisorJob()
+    private val scope = CoroutineScope(Dispatchers.IO + pluginJob)
     private var activity: Activity? = null
     private val notificationPermissionRequestCode = 1001
     private var permissionResultCallback: ((Boolean) -> Unit)? = null
@@ -128,12 +136,28 @@ class SdkBridge(
     }
 
     /**
+     * Full cleanup called when the plugin is detached from the Flutter engine.
+     *
+     * Unsubscribes from native events, cancels all coroutines, clears the event
+     * sink, and resolves any pending permission callback as denied.
+     */
+    fun dispose() {
+        Events.unsubscribe()
+        pluginJob.cancel()
+        eventSink = null
+        permissionResultCallback?.invoke(false)
+        permissionResultCallback = null
+        activity = null
+    }
+
+    /**
      * Event stream handler exposed to the Flutter plugin registration code.
      */
     val eventStreamHandler: EventChannel.StreamHandler
         get() = this
 
-    init {
+    override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+        eventSink = events
         Events.subscribe { event ->
             try {
                 val map = eventToMap(event)
@@ -150,11 +174,8 @@ class SdkBridge(
         }
     }
 
-    override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
-        eventSink = events
-    }
-
     override fun onCancel(arguments: Any?) {
+        Events.unsubscribe()
         eventSink = null
     }
 
@@ -331,8 +352,16 @@ class SdkBridge(
                 result.error("ERR", "sid is missing", null)
                 return
             }
+            if (sid.isBlank()) {
+                result.error("ERR", "sid must not be empty", null)
+                return
+            }
             val eventName = args["eventName"] as? String ?: run {
                 result.error("ERR", "eventName is missing", null)
+                return
+            }
+            if (eventName.isBlank()) {
+                result.error("ERR", "eventName must not be empty", null)
                 return
             }
             val sendMessageId = args["sendMessageId"] as? String
@@ -381,7 +410,10 @@ class SdkBridge(
 
     private fun handlePushSubscribe(call: MethodCall, result: MethodChannel.Result) {
         try {
-            val args = call.arguments as? Map<String, Any> ?: return
+            val args = call.arguments as? Map<String, Any> ?: run {
+                result.error("ERR", "args is null", null)
+                return
+            }
             val sync = (args["sync"] as? Boolean) != false
             val replace = args["replace"] as? Boolean
             val skipTriggers = args["skipTriggers"] as? Boolean
@@ -401,6 +433,7 @@ class SdkBridge(
             result.success(null)
         } catch (e: Exception) {
             Log.e("altcraft_lib_android_bridge", "pushSubscribe failed: ${e.message}")
+            result.error("SDK_ERROR", e.message, null)
         }
     }
 
@@ -408,7 +441,10 @@ class SdkBridge(
 
     private fun handlePushSuspend(call: MethodCall, result: MethodChannel.Result) {
         try {
-            val args = call.arguments as? Map<String, Any> ?: return
+            val args = call.arguments as? Map<String, Any> ?: run {
+                result.error("ERR", "args is null", null)
+                return
+            }
             val sync = (args["sync"] as? Boolean) != false
             val replace = args["replace"] as? Boolean
             val skipTriggers = args["skipTriggers"] as? Boolean
@@ -428,6 +464,7 @@ class SdkBridge(
             result.success(null)
         } catch (e: Exception) {
             Log.e("altcraft_lib_android_bridge", "pushSuspend failed: ${e.message}")
+            result.error("SDK_ERROR", e.message, null)
         }
     }
 
@@ -435,7 +472,10 @@ class SdkBridge(
 
     private fun handlePushUnSubscribe(call: MethodCall, result: MethodChannel.Result) {
         try {
-            val args = call.arguments as? Map<String, Any> ?: return
+            val args = call.arguments as? Map<String, Any> ?: run {
+                result.error("ERR", "args is null", null)
+                return
+            }
             val sync = (args["sync"] as? Boolean) != false
             val replace = args["replace"] as? Boolean
             val skipTriggers = args["skipTriggers"] as? Boolean
@@ -455,6 +495,7 @@ class SdkBridge(
             result.success(null)
         } catch (e: Exception) {
             Log.e("altcraft_lib_android_bridge", "pushUnSubscribe failed: ${e.message}")
+            result.error("SDK_ERROR", e.message, null)
         }
     }
 
@@ -539,13 +580,17 @@ class SdkBridge(
 
     private fun handleUpdateProfileFields(call: MethodCall, result: MethodChannel.Result) {
         try {
-            val args = call.arguments as? Map<String, Any> ?: return
+            val args = call.arguments as? Map<String, Any> ?: run {
+                result.error("ERR", "args is null", null)
+                return
+            }
             val profileFields = args["profileFields"] as? Map<String, Any?>
             val skipTriggers = args["skipTriggers"] as? Boolean
             AltcraftSDK.profileFunctions.updateProfileFields(context, profileFields, skipTriggers)
             result.success(null)
         } catch (e: Exception) {
             Log.e("altcraft_lib_android_bridge", "updateProfileFields failed: ${e.message}")
+            result.error("SDK_ERROR", e.message, null)
         }
     }
 
@@ -557,7 +602,10 @@ class SdkBridge(
                 try {
                     result.success(null)
                 } catch (e: Exception) {
-                    Log.e("altcraft_lib_android_bridge", "forcedTokenUpdate callback failed: ${e.message}")
+                    Log.e(
+                        "altcraft_lib_android_bridge",
+                        "forcedTokenUpdate callback failed: ${e.message}"
+                    )
                     result.error("SDK_ERROR", e.message, null)
                 }
             }
@@ -583,7 +631,10 @@ class SdkBridge(
                 try {
                     result.success(null)
                 } catch (e: Exception) {
-                    Log.e("altcraft_lib_android_bridge", "deleteDeviceToken callback failed: ${e.message}")
+                    Log.e(
+                        "altcraft_lib_android_bridge",
+                        "deleteDeviceToken callback failed: ${e.message}"
+                    )
                     result.error("SDK_ERROR", e.message, null)
                 }
             }
@@ -619,8 +670,7 @@ class SdkBridge(
 
     private fun handleIsAltcraftPush(call: MethodCall, result: MethodChannel.Result) {
         try {
-            val message = (call.arguments as? Map<*, *>)?.mapKeys { entry -> entry.key.toString() }
-                ?.mapValues { entry -> entry.value.toString() } ?: emptyMap<String, String>()
+            val message = safeStringMap(call.arguments as? Map<*, *>)
             val isAlt = AltcraftSDK.PushReceiver.isAltcraftPush(message)
             result.success(isAlt)
         } catch (e: Exception) {
@@ -633,12 +683,12 @@ class SdkBridge(
 
     private fun handleTakePush(call: MethodCall, result: MethodChannel.Result) {
         try {
-            val message = (call.arguments as? Map<*, *>)?.mapKeys { entry -> entry.key.toString() }
-                ?.mapValues { entry -> entry.value.toString() } ?: emptyMap<String, String>()
+            val message = safeStringMap(call.arguments as? Map<*, *>)
             AltcraftSDK.PushReceiver.takePush(context, message)
             result.success(null)
         } catch (e: Exception) {
             Log.e("altcraft_lib_android_bridge", "takePush failed: ${e.message}")
+            result.error("SDK_ERROR", e.message, null)
         }
     }
 
@@ -646,14 +696,17 @@ class SdkBridge(
 
     private fun handleDeliveryEvent(call: MethodCall, result: MethodChannel.Result) {
         try {
-            val args = call.arguments as? Map<String, Any> ?: return
-            val message = (args["message"] as? Map<*, *>)?.mapKeys { entry -> entry.key.toString() }
-                ?.mapValues { entry -> entry.value.toString() }
+            val args = call.arguments as? Map<String, Any> ?: run {
+                result.error("ERR", "args is null", null)
+                return
+            }
+            val message = safeStringMap(args["message"] as? Map<*, *>)
             val messageUID = args["messageUID"] as? String
             AltcraftSDK.pushEventFunctions.deliveryEvent(context, message, messageUID)
             result.success(null)
         } catch (e: Exception) {
             Log.e("altcraft_lib_android_bridge", "deliveryEvent failed: ${e.message}")
+            result.error("SDK_ERROR", e.message, null)
         }
     }
 
@@ -661,14 +714,17 @@ class SdkBridge(
 
     private fun handleOpenEvent(call: MethodCall, result: MethodChannel.Result) {
         try {
-            val args = call.arguments as? Map<String, Any> ?: return
-            val message = (args["message"] as? Map<*, *>)?.mapKeys { entry -> entry.key.toString() }
-                ?.mapValues { entry -> entry.value.toString() }
+            val args = call.arguments as? Map<String, Any> ?: run {
+                result.error("ERR", "args is null", null)
+                return
+            }
+            val message = safeStringMap(args["message"] as? Map<*, *>)
             val messageUID = args["messageUID"] as? String
             AltcraftSDK.pushEventFunctions.openEvent(context, message, messageUID)
             result.success(null)
         } catch (e: Exception) {
             Log.e("altcraft_lib_android_bridge", "openEvent failed: ${e.message}")
+            result.error("SDK_ERROR", e.message, null)
         }
     }
 
@@ -695,19 +751,17 @@ class SdkBridge(
                 return
             }
 
-            if (act is ComponentActivity) {
-                AltcraftSDK.requestNotificationPermission(context, act)
-                result.success(null)
-            } else {
-                ActivityCompat.requestPermissions(
-                    act,
-                    arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
-                    notificationPermissionRequestCode
-                )
-                permissionResultCallback = { granted -> result.success(granted) }
-            }
+            ActivityCompat.requestPermissions(
+                act,
+                arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
+                notificationPermissionRequestCode
+            )
+            permissionResultCallback = { granted -> result.success(granted) }
         } catch (e: Exception) {
-            Log.e("altcraft_lib_android_bridge", "requestNotificationPermission failed: ${e.message}")
+            Log.e(
+                "altcraft_lib_android_bridge",
+                "requestNotificationPermission failed: ${e.message}"
+            )
             result.success(false)
         }
     }
@@ -719,16 +773,28 @@ class SdkBridge(
             AltcraftSDK.unlockInitialOperationsInThisSession()
             result.success(null)
         } catch (e: Exception) {
-            Log.e("altcraft_lib_android_bridge", "unlockInitialOperationsInThisSession failed: ${e.message}")
+            Log.e(
+                "altcraft_lib_android_bridge",
+                "unlockInitialOperationsInThisSession failed: ${e.message}"
+            )
+            result.error("SDK_ERROR", e.message, null)
         }
     }
 
     // ---- setUserDefaultsValue ----
+    // Note: suiteName is iOS-only (App Group). On Android, values are always
+    // stored in the plugin's private SharedPreferences ("altcraft_sdk").
 
     private fun handleSetUserDefaults(call: MethodCall, result: MethodChannel.Result) {
         try {
-            val args = call.arguments as? Map<String, Any> ?: return
-            val key = args["key"] as? String ?: return
+            val args = call.arguments as? Map<String, Any> ?: run {
+                result.error("ERR", "args is null", null)
+                return
+            }
+            val key = args["key"] as? String ?: run {
+                result.error("ERR", "key is missing", null)
+                return
+            }
             val value = args["value"] as? String
             val prefs = context.getSharedPreferences("altcraft_sdk", Context.MODE_PRIVATE)
             if (value == null) {
@@ -739,6 +805,7 @@ class SdkBridge(
             result.success(null)
         } catch (e: Exception) {
             Log.e("altcraft_lib_android_bridge", "setUserDefaultsValue failed: ${e.message}")
+            result.error("SDK_ERROR", e.message, null)
         }
     }
 
@@ -751,8 +818,10 @@ class SdkBridge(
             result.success(null)
         } catch (e: Exception) {
             Log.e("altcraft_lib_android_bridge", "unsubscribeFromEvents failed: ${e.message}")
+            result.error("SDK_ERROR", e.message, null)
         }
     }
+
 
     // ---- Helpers ----
 
@@ -810,21 +879,21 @@ class SdkBridge(
         if (response == null) return null
         return codecSafe(
             mapOf(
-                "httpCode" to response.httpCode,
+                "http_code" to response.httpCode,
                 "response" to (response.response?.let {
                     mapOf<String, Any?>(
                         "error" to it.error,
-                        "errorText" to it.errorText,
+                        "error_text" to it.errorText,
                         "profile" to (it.profile?.let { p ->
                             mapOf<String, Any?>(
                                 "id" to p.id,
                                 "status" to p.status,
-                                "isTest" to p.isTest,
+                                "is_test" to p.isTest,
                                 "subscription" to (p.subscription?.let { s ->
                                     val fields: Any? = s.fields
                                     mapOf<String, Any?>(
-                                        "subscriptionId" to s.subscriptionId,
-                                        "hashId" to s.hashId,
+                                        "subscription_id" to s.subscriptionId,
+                                        "hash_id" to s.hashId,
                                         "provider" to s.provider,
                                         "status" to s.status,
                                         "fields" to codecSafe(fields),
@@ -896,14 +965,14 @@ class SdkBridge(
     /**
      * Creates an SDK subscription model from a Flutter map.
      *
-     * Supports email, SMS, and push subscription payloads. Returns `null` when
+     * Supports email, SMS, push, and cc_data subscription payloads. Returns `null` when
      * the channel is unknown or required fields for the selected channel are missing.
      *
      * @param map Subscription data received from Dart.
      * @return SDK subscription model, or `null` if the map cannot be parsed.
      */
     private fun mapToSubscription(map: Map<String, Any?>): DataClasses.Subscription? {
-        val channel = map["channel"] as? String ?: return null
+        val channel = (map["channel"] as? String) ?: (map["type"] as? String) ?: return null
         val resourceId = (map["resourceId"] as? Number)?.toInt()
             ?: (map["resource_id"] as? Number)?.toInt() ?: return null
         val status = map["status"] as? String
@@ -952,7 +1021,68 @@ class SdkBridge(
                 )
             }
 
+            "cc_data" -> {
+                val ccChannel = (map["ccChannel"] as? String)
+                    ?: (map["cc_channel"] as? String) ?: return null
+                val ccDataRaw = (map["ccData"] as? Map<String, Any?>)
+                    ?: (map["cc_data"] as? Map<String, Any?>) ?: return null
+                val ccData = mapToJsonObject(ccDataRaw)
+                DataClasses.CcDataSubscription(
+                    resourceId = resourceId,
+                    channel = ccChannel,
+                    ccData = ccData,
+                    status = status,
+                    priority = priority,
+                    customFields = customFields,
+                    cats = cats
+                )
+            }
+
             else -> null
+        }
+    }
+
+    /**
+     * Safely converts a map to String keys/values, filtering out null entries.
+     *
+     * Unlike [Map.mapValues] with [toString()], this avoids converting null to "null".
+     *
+     * @param source Source map, may be null.
+     * @return Map with String keys and non-null String values.
+     */
+    private fun safeStringMap(source: Map<*, *>?): Map<String, String> {
+        if (source == null) return emptyMap()
+        return source.entries
+            .filter { it.value != null }
+            .associate { (k, v) ->
+                (k?.toString() ?: "") to (v as Any).toString()
+            }
+    }
+
+    /**
+     * Converts a Map to a JsonObject for use with CcDataSubscription.
+     */
+    private fun mapToJsonObject(map: Map<String, Any?>): JsonObject {
+        return buildJsonObject {
+            for ((key, value) in map) {
+                put(key, valueToJsonElement(value))
+            }
+        }
+    }
+
+    private fun valueToJsonElement(value: Any?): kotlinx.serialization.json.JsonElement {
+        return when (value) {
+            null -> kotlinx.serialization.json.JsonNull
+            is String -> kotlinx.serialization.json.JsonPrimitive(value)
+            is Boolean -> kotlinx.serialization.json.JsonPrimitive(value)
+            is Number -> kotlinx.serialization.json.JsonPrimitive(value.toDouble())
+            is Map<*, *> -> mapToJsonObject(value.mapKeys { it.key.toString() })
+            is List<*> -> kotlinx.serialization.json.buildJsonArray {
+                for (item in value) {
+                    add(valueToJsonElement(item))
+                }
+            }
+            else -> kotlinx.serialization.json.JsonPrimitive(value.toString())
         }
     }
 }

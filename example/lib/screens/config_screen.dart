@@ -31,8 +31,8 @@ class _ConfigScreenState extends State<ConfigScreen> {
   final _pfValueController = TextEditingController();
   final _catController = TextEditingController();
 
-  final androidProviders = ['android-firebase', 'android-hms', 'android-rustore'];
-  final iosProviders = ['ios-apns', 'ios-firebase', 'ios-hms'];
+  final androidProviders = ['android-firebase', 'android-huawei', 'android-rustore'];
+  final iosProviders = ['ios-apns', 'ios-firebase', 'ios-huawei'];
 
   @override
   void initState() {
@@ -66,7 +66,7 @@ class _ConfigScreenState extends State<ConfigScreen> {
     );
     _config = newConfig;
     await Store.instance.saveConfig(newConfig);
-    AltcraftSDK.unlockInitialOperationsInThisSession();
+    await AltcraftSDK.unlockInitialOperationsInThisSession();
     await SdkTests.initializationSDK(newConfig);
   }
 
@@ -134,9 +134,9 @@ class _ConfigScreenState extends State<ConfigScreen> {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    Expanded(child: _buildSubButton('Save', const Color(0xFFADF7BD), onTap: _saveConfig)),
+                    Expanded(child: _buildSubButton('Save', const Color(0xFF8DBFFC).withOpacity(0.4), onTap: _saveConfig)),
                     const SizedBox(width: 8),
-                    Expanded(child: _buildSubButton('Clear', const Color(0xFFFF6E7F), onTap: _clearConfig)),
+                    Expanded(child: _buildSubButton('Clear', const Color(0xFFCCCCCC), onTap: _clearConfig)),
                   ],
                 ),
               ],
@@ -157,14 +157,14 @@ class _ConfigScreenState extends State<ConfigScreen> {
                 Row(
                   children: [
                     Expanded(
-                      child: _buildSubButton('Save', const Color(0xFFADF7BD), onTap: () async {
+                      child: _buildSubButton('Save', const Color(0xFF8DBFFC).withOpacity(0.4), onTap: () async {
                         await Store.instance.saveJwtAnon(_jwtAnonController.text);
                         await Store.instance.saveJwtReg(_jwtRegController.text);
                       }),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: _buildSubButton('Clear', const Color(0xFFFF6E7F), onTap: () async {
+                      child: _buildSubButton('Clear', const Color(0xFFCCCCCC), onTap: () async {
                         setState(() {
                           _jwtAnonController.clear();
                           _jwtRegController.clear();
@@ -214,7 +214,7 @@ class _ConfigScreenState extends State<ConfigScreen> {
                 Row(
                   children: [
                     Expanded(
-                      child: _buildSubButton('Save', const Color(0xFFADF7BD), onTap: () => Store.instance.saveSubscribeSettings(SubscribeSettings(
+                      child: _buildSubButton('Save', const Color(0xFF8DBFFC).withOpacity(0.4), onTap: () => Store.instance.saveSubscribeSettings(SubscribeSettings(
                         sync: _sync, replace: _replace, skipTriggers: _skipTriggers,
                         customFields: Map.from(_customFields), profileFields: Map.from(_profileFields),
                         cats: _categories.map((c) => CategoryData(name: c)).toList(),
@@ -222,7 +222,7 @@ class _ConfigScreenState extends State<ConfigScreen> {
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: _buildSubButton('Clear', const Color(0xFFFF6E7F), onTap: () {
+                      child: _buildSubButton('Clear', const Color(0xFFCCCCCC), onTap: () {
                         setState(() {
                           _sync = true; _replace = false; _skipTriggers = false;
                           _customFields.clear(); _profileFields.clear(); _categories.clear();

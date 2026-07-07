@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:altcraft_sdk/altcraft_sdk.dart';
@@ -12,10 +13,10 @@ class SdkTests {
     final jwt = authStatus ? jwtReg : jwtAnon;
 
     // Set JWT via UserDefaults for iOS compatibility
-    AltcraftSDK.setUserDefaultsValue(kAppGroupSuite, kJwtKey, jwt);
+    await AltcraftSDK.setUserDefaultsValue(kAppGroupSuite, kJwtKey, jwt);
 
-    if (Platform.isIOS) { 
-      AltcraftSDK.setAppGroup(kAppGroupSuite);
+    if (Platform.isIOS) {
+      await AltcraftSDK.setAppGroup(kAppGroupSuite);
     }
 
     final defaultProvider = Platform.isIOS ? 'ios-apns' : 'android-firebase';
@@ -42,30 +43,32 @@ class SdkTests {
 
   static void doPushSubscribe() {
     final ss = _lastSubscribeSettings;
-    AltcraftSDK.pushSubscribe(
-      sync: ss?.sync,
-      replace: ss?.replace,
-      skipTriggers: ss?.skipTriggers,
-      customFields: ss?.customFields.cast<String, dynamic>(),
-      profileFields: ss?.profileFields.cast<String, dynamic>(),
-      cats: ss?.cats.map((c) => c.toJson()).toList(),
+    unawaited(
+      AltcraftSDK.pushSubscribe(
+        sync: ss?.sync,
+        replace: ss?.replace,
+        skipTriggers: ss?.skipTriggers,
+        customFields: ss?.customFields.cast<String, dynamic>(),
+        profileFields: ss?.profileFields.cast<String, dynamic>(),
+        cats: ss?.cats.map((c) => c.toJson()).toList(),
+      ),
     );
   }
 
   static void doPushSuspend() {
-    AltcraftSDK.pushSuspend();
+    unawaited(AltcraftSDK.pushSuspend());
   }
 
   static void doPushUnSubscribe() {
-    AltcraftSDK.pushUnSubscribe();
+    unawaited(AltcraftSDK.pushUnSubscribe());
   }
 
   static void doLogin() {
-    AltcraftSDK.pushSubscribe();
+    unawaited(AltcraftSDK.pushSubscribe());
   }
 
   static void doLogout() {
-    AltcraftSDK.pushUnSubscribe();
+    unawaited(AltcraftSDK.pushUnSubscribe());
   }
 
   static Future<Map<String, dynamic>?> doGetProfileStatus() async {
@@ -82,16 +85,20 @@ class SdkTests {
   }
 
   static void doSendMobileEvent(String eventName) {
-    AltcraftSDK.mobileEvent(
-      sid: kMobileEventSid,
-      eventName: eventName,
+    unawaited(
+      AltcraftSDK.mobileEvent(
+        sid: kMobileEventSid,
+        eventName: eventName,
+      ),
     );
   }
 
   static void doUpdateProfile(Map<String, String>? fields) {
     if (fields == null || fields.isEmpty) return;
-    AltcraftSDK.updateProfileFields(
-      profileFields: fields.cast<String, dynamic>(),
+    unawaited(
+      AltcraftSDK.updateProfileFields(
+        profileFields: fields.cast<String, dynamic>(),
+      ),
     );
   }
 

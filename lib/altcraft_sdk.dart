@@ -62,7 +62,14 @@ class AltcraftSDK {
   /// The current platform interface implementation.
   ///
   /// Can be overridden for testing with a mock implementation.
-  static AltcraftSdkPlatformInterface platform = MethodChannelAltcraftSdk();
+  static AltcraftSdkPlatformInterface _platform = MethodChannelAltcraftSdk();
+
+  static AltcraftSdkPlatformInterface get platform => _platform;
+
+  static set platform(AltcraftSdkPlatformInterface value) {
+    _platform = value;
+    AltcraftSdkPlatformInterface.instance = value;
+  }
 
   // ---- Initialization ----
 
@@ -74,7 +81,7 @@ class AltcraftSDK {
   // ---- Push Subscription ----
 
   /// Subscribes to push notifications.
-  static void pushSubscribe({
+  static Future<void> pushSubscribe({
     bool? sync,
     Map<String, dynamic>? profileFields,
     Map<String, dynamic>? customFields,
@@ -82,7 +89,7 @@ class AltcraftSDK {
     bool? replace,
     bool? skipTriggers,
   }) {
-    platform.pushSubscribe(
+    return platform.pushSubscribe(
       sync: sync,
       profileFields: profileFields,
       customFields: customFields,
@@ -93,7 +100,7 @@ class AltcraftSDK {
   }
 
   /// Suspends push subscription.
-  static void pushSuspend({
+  static Future<void> pushSuspend({
     bool? sync,
     Map<String, dynamic>? profileFields,
     Map<String, dynamic>? customFields,
@@ -101,7 +108,7 @@ class AltcraftSDK {
     bool? replace,
     bool? skipTriggers,
   }) {
-    platform.pushSuspend(
+    return platform.pushSuspend(
       sync: sync,
       profileFields: profileFields,
       customFields: customFields,
@@ -112,7 +119,7 @@ class AltcraftSDK {
   }
 
   /// Unsubscribes from push notifications.
-  static void pushUnSubscribe({
+  static Future<void> pushUnSubscribe({
     bool? sync,
     Map<String, dynamic>? profileFields,
     Map<String, dynamic>? customFields,
@@ -120,7 +127,7 @@ class AltcraftSDK {
     bool? replace,
     bool? skipTriggers,
   }) {
-    platform.pushUnSubscribe(
+    return platform.pushUnSubscribe(
       sync: sync,
       profileFields: profileFields,
       customFields: customFields,
@@ -157,7 +164,9 @@ class AltcraftSDK {
 
   /// Subscribes to SDK events stream.
   ///
-  /// Returns a stream of [SdkEvent] objects. Each call creates an independent stream.
+  /// Returns a broadcast stream of [SdkEvent] objects. Multiple listeners can
+  /// subscribe to the same underlying native event source. Call
+  /// [unsubscribeFromEvents] to stop all event delivery.
   static Stream<SdkEvent> subscribeToEvents() {
     return platform.subscribeToEvents();
   }
@@ -172,7 +181,7 @@ class AltcraftSDK {
   // ---- Mobile Events ----
 
   /// Sends a mobile event to the Altcraft platform.
-  static void mobileEvent({
+  static Future<void> mobileEvent({
     required String sid,
     required String eventName,
     String? sendMessageId,
@@ -183,7 +192,7 @@ class AltcraftSDK {
     Map<String, dynamic>? subscription,
     Map<String, dynamic>? utm,
   }) {
-    platform.mobileEvent(
+    return platform.mobileEvent(
       sid: sid,
       eventName: eventName,
       sendMessageId: sendMessageId,
@@ -218,8 +227,8 @@ class AltcraftSDK {
   // ---- Push Handling (Android) ----
 
   /// Forwards a push payload to the SDK (Android).
-  static void takePush(Map<String, String> message) {
-    platform.takePush(message);
+  static Future<void> takePush(Map<String, String> message) {
+    return platform.takePush(message);
   }
 
   // ---- Permissions (Android) ----
@@ -233,31 +242,34 @@ class AltcraftSDK {
   // ---- Push Events (Android) ----
 
   /// Reports push delivery (Android).
-  static void deliveryEvent(Map<String, String>? message, String? messageUID) {
-    platform.deliveryEvent(message, messageUID);
+  static Future<void> deliveryEvent(Map<String, String>? message, String? messageUID) {
+    return platform.deliveryEvent(message, messageUID);
   }
 
   /// Reports push open (Android).
-  static void openEvent(Map<String, String>? message, String? messageUID) {
-    platform.openEvent(message, messageUID);
+  static Future<void> openEvent(Map<String, String>? message, String? messageUID) {
+    return platform.openEvent(message, messageUID);
   }
 
   // ---- UserDefaults (iOS) ----
 
-  /// Stores a value in native storage (UserDefaults on iOS, SharedPreferences on Android).
-  static void setUserDefaultsValue(
-      String? suiteName, String key, dynamic value) {
-    platform.setUserDefaultsValue(suiteName, key, value);
+  /// Stores a string value in native storage (UserDefaults on iOS, SharedPreferences on Android).
+  ///
+  /// On iOS, [suiteName] selects the App Group UserDefaults suite.
+  /// On Android, [suiteName] is ignored.
+  static Future<void> setUserDefaultsValue(
+      String? suiteName, String key, String? value) {
+    return platform.setUserDefaultsValue(suiteName, key, value);
   }
 
   // ---- Profile ----
 
   /// Updates profile fields on the server.
-  static void updateProfileFields({
+  static Future<void> updateProfileFields({
     Map<String, dynamic>? profileFields,
     bool? skipTriggers,
   }) {
-    platform.updateProfileFields(
+    return platform.updateProfileFields(
       profileFields: profileFields,
       skipTriggers: skipTriggers,
     );
@@ -291,14 +303,14 @@ class AltcraftSDK {
   // ---- Session (Android) ----
 
   /// Unlocks initial operations in the current session (Android).
-  static void unlockInitialOperationsInThisSession() {
-    platform.unlockInitialOperationsInThisSession();
+  static Future<void> unlockInitialOperationsInThisSession() {
+    return platform.unlockInitialOperationsInThisSession();
   }
 
   // ---- App Group (iOS) ----
 
   /// Sets the App Group for UserDefaults (iOS).
-  static void setAppGroup(String? groupName) {
-    platform.setAppGroup(groupName);
+  static Future<void> setAppGroup(String? groupName) {
+    return platform.setAppGroup(groupName);
   }
 }

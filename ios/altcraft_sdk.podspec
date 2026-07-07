@@ -3,8 +3,8 @@ Pod::Spec.new do |s|
   s.version          = '1.0.0'
   s.summary          = 'Flutter SDK for Altcraft push notification platform'
   s.description      = 'Flutter plugin that bridges the native Altcraft SDK for push notifications on iOS.'
-  s.homepage         = 'https://github.com/altcraft/altcraft-sdk-flutter'
-  s.license          = { :type => 'MIT', :file => '../LICENSE' }
+  s.homepage         = 'https://github.com/altcraft/flutter-sdk'
+  s.license          = { :type => 'EULA', :file => '../LICENSE' }
   s.author           = { 'Altcraft' => 'support@altcraft.com' }
   s.source           = { :path => '.' }
   s.source_files     = 'Classes/**/*'

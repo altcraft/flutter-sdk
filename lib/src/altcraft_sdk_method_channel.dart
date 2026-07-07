@@ -17,6 +17,7 @@ class MethodChannelAltcraftSdk extends AltcraftSdkPlatformInterface {
 
   final MethodChannel _channel = const MethodChannel('com.altcraft/sdk');
   final EventChannel _eventChannel = const EventChannel('com.altcraft/events');
+  Stream<SdkEvent>? _eventStream;
 
   // ---- Initialization ----
 
@@ -32,60 +33,72 @@ class MethodChannelAltcraftSdk extends AltcraftSdkPlatformInterface {
   // ---- Push Subscription ----
 
   @override
-  void pushSubscribe({
+  Future<void> pushSubscribe({
     bool? sync,
     Map<String, dynamic>? profileFields,
     Map<String, dynamic>? customFields,
     List<dynamic>? cats,
     bool? replace,
     bool? skipTriggers,
-  }) {
-    _channel.invokeMethod('pushSubscribe', {
-      'sync': sync,
-      'profileFields': profileFields,
-      'customFields': customFields,
-      'cats': cats,
-      'replace': replace,
-      'skipTriggers': skipTriggers,
-    });
+  }) async {
+    try {
+      await _channel.invokeMethod('pushSubscribe', {
+        'sync': sync,
+        'profileFields': profileFields,
+        'customFields': customFields,
+        'cats': cats,
+        'replace': replace,
+        'skipTriggers': skipTriggers,
+      });
+    } on PlatformException catch (e) {
+      throw AltcraftException(code: e.code, message: e.message ?? 'pushSubscribe failed');
+    }
   }
 
   @override
-  void pushSuspend({
+  Future<void> pushSuspend({
     bool? sync,
     Map<String, dynamic>? profileFields,
     Map<String, dynamic>? customFields,
     List<dynamic>? cats,
     bool? replace,
     bool? skipTriggers,
-  }) {
-    _channel.invokeMethod('pushSuspend', {
-      'sync': sync,
-      'profileFields': profileFields,
-      'customFields': customFields,
-      'cats': cats,
-      'replace': replace,
-      'skipTriggers': skipTriggers,
-    });
+  }) async {
+    try {
+      await _channel.invokeMethod('pushSuspend', {
+        'sync': sync,
+        'profileFields': profileFields,
+        'customFields': customFields,
+        'cats': cats,
+        'replace': replace,
+        'skipTriggers': skipTriggers,
+      });
+    } on PlatformException catch (e) {
+      throw AltcraftException(code: e.code, message: e.message ?? 'pushSuspend failed');
+    }
   }
 
   @override
-  void pushUnSubscribe({
+  Future<void> pushUnSubscribe({
     bool? sync,
     Map<String, dynamic>? profileFields,
     Map<String, dynamic>? customFields,
     List<dynamic>? cats,
     bool? replace,
     bool? skipTriggers,
-  }) {
-    _channel.invokeMethod('pushUnSubscribe', {
-      'sync': sync,
-      'profileFields': profileFields,
-      'customFields': customFields,
-      'cats': cats,
-      'replace': replace,
-      'skipTriggers': skipTriggers,
-    });
+  }) async {
+    try {
+      await _channel.invokeMethod('pushUnSubscribe', {
+        'sync': sync,
+        'profileFields': profileFields,
+        'customFields': customFields,
+        'cats': cats,
+        'replace': replace,
+        'skipTriggers': skipTriggers,
+      });
+    } on PlatformException catch (e) {
+      throw AltcraftException(code: e.code, message: e.message ?? 'pushUnSubscribe failed');
+    }
   }
 
   @override
@@ -140,7 +153,7 @@ class MethodChannelAltcraftSdk extends AltcraftSdkPlatformInterface {
 
   @override
   Stream<SdkEvent> subscribeToEvents() {
-    return _eventChannel
+    _eventStream ??= _eventChannel
         .receiveBroadcastStream()
         .asyncMap<SdkEvent>((dynamic event) {
           try {
@@ -149,7 +162,7 @@ class MethodChannelAltcraftSdk extends AltcraftSdkPlatformInterface {
             }
             return SdkEvent(
               function: '',
-              message: 'Invalid event received: ${event}',
+              message: 'Invalid event received: $event',
               type: 'error',
             );
           } catch (e) {
@@ -160,17 +173,22 @@ class MethodChannelAltcraftSdk extends AltcraftSdkPlatformInterface {
             );
           }
         });
+    return _eventStream!;
   }
 
   @override
   Future<void> unsubscribeFromEvents() async {
-    await _channel.invokeMethod('unsubscribeFromEvents');
+    try {
+      await _channel.invokeMethod('unsubscribeFromEvents');
+    } on PlatformException catch (e) {
+      throw AltcraftException(code: e.code, message: e.message ?? 'unsubscribeFromEvents failed');
+    }
   }
 
   // ---- Mobile Events ----
 
   @override
-  void mobileEvent({
+  Future<void> mobileEvent({
     required String sid,
     required String eventName,
     String? sendMessageId,
@@ -180,18 +198,22 @@ class MethodChannelAltcraftSdk extends AltcraftSdkPlatformInterface {
     Map<String, dynamic>? profileFields,
     Map<String, dynamic>? subscription,
     Map<String, dynamic>? utm,
-  }) {
-    _channel.invokeMethod('mobileEvent', {
-      'sid': sid,
-      'eventName': eventName,
-      'sendMessageId': sendMessageId,
-      'payload': payload,
-      'matching': matching,
-      'matchingType': matchingType,
-      'profileFields': profileFields,
-      'subscription': subscription,
-      'utm': utm,
-    });
+  }) async {
+    try {
+      await _channel.invokeMethod('mobileEvent', {
+        'sid': sid,
+        'eventName': eventName,
+        'sendMessageId': sendMessageId,
+        'payload': payload,
+        'matching': matching,
+        'matchingType': matchingType,
+        'profileFields': profileFields,
+        'subscription': subscription,
+        'utm': utm,
+      });
+    } on PlatformException catch (e) {
+      throw AltcraftException(code: e.code, message: e.message ?? 'mobileEvent failed');
+    }
   }
 
   // ---- Push Tokens ----
@@ -233,8 +255,12 @@ class MethodChannelAltcraftSdk extends AltcraftSdkPlatformInterface {
   // ---- Push Handling (Android) ----
 
   @override
-  void takePush(Map<String, String> message) {
-    _channel.invokeMethod('takePush', message);
+  Future<void> takePush(Map<String, String> message) async {
+    try {
+      await _channel.invokeMethod('takePush', message);
+    } on PlatformException catch (e) {
+      throw AltcraftException(code: e.code, message: e.message ?? 'takePush failed');
+    }
   }
 
   // ---- Permissions (Android) ----
@@ -248,43 +274,59 @@ class MethodChannelAltcraftSdk extends AltcraftSdkPlatformInterface {
   // ---- Push Events (Android) ----
 
   @override
-  void deliveryEvent(Map<String, String>? message, String? messageUID) {
-    _channel.invokeMethod('deliveryEvent', {
-      'message': message,
-      'messageUID': messageUID,
-    });
+  Future<void> deliveryEvent(Map<String, String>? message, String? messageUID) async {
+    try {
+      await _channel.invokeMethod('deliveryEvent', {
+        'message': message,
+        'messageUID': messageUID,
+      });
+    } on PlatformException catch (e) {
+      throw AltcraftException(code: e.code, message: e.message ?? 'deliveryEvent failed');
+    }
   }
 
   @override
-  void openEvent(Map<String, String>? message, String? messageUID) {
-    _channel.invokeMethod('openEvent', {
-      'message': message,
-      'messageUID': messageUID,
-    });
+  Future<void> openEvent(Map<String, String>? message, String? messageUID) async {
+    try {
+      await _channel.invokeMethod('openEvent', {
+        'message': message,
+        'messageUID': messageUID,
+      });
+    } on PlatformException catch (e) {
+      throw AltcraftException(code: e.code, message: e.message ?? 'openEvent failed');
+    }
   }
 
   // ---- UserDefaults (iOS) ----
 
   @override
-  void setUserDefaultsValue(String? suiteName, String key, dynamic value) {
-    _channel.invokeMethod('setUserDefaultsValue', {
-      'suiteName': suiteName,
-      'key': key,
-      'value': value?.toString(),
-    });
+  Future<void> setUserDefaultsValue(String? suiteName, String key, String? value) async {
+    try {
+      await _channel.invokeMethod('setUserDefaultsValue', {
+        'suiteName': suiteName,
+        'key': key,
+        'value': value,
+      });
+    } on PlatformException catch (e) {
+      throw AltcraftException(code: e.code, message: e.message ?? 'setUserDefaultsValue failed');
+    }
   }
 
   // ---- Profile ----
 
   @override
-  void updateProfileFields({
+  Future<void> updateProfileFields({
     Map<String, dynamic>? profileFields,
     bool? skipTriggers,
-  }) {
-    _channel.invokeMethod('updateProfileFields', {
-      'profileFields': profileFields,
-      'skipTriggers': skipTriggers,
-    });
+  }) async {
+    try {
+      await _channel.invokeMethod('updateProfileFields', {
+        'profileFields': profileFields,
+        'skipTriggers': skipTriggers,
+      });
+    } on PlatformException catch (e) {
+      throw AltcraftException(code: e.code, message: e.message ?? 'updateProfileFields failed');
+    }
   }
 
   // ---- Token Management ----
@@ -327,14 +369,22 @@ class MethodChannelAltcraftSdk extends AltcraftSdkPlatformInterface {
   // ---- Session (Android) ----
 
   @override
-  void unlockInitialOperationsInThisSession() {
-    _channel.invokeMethod('unlockInitialOperationsInThisSession');
+  Future<void> unlockInitialOperationsInThisSession() async {
+    try {
+      await _channel.invokeMethod('unlockInitialOperationsInThisSession');
+    } on PlatformException catch (e) {
+      throw AltcraftException(code: e.code, message: e.message ?? 'unlockInitialOperationsInThisSession failed');
+    }
   }
 
   // ---- App Group (iOS) ----
 
   @override
-  void setAppGroup(String? groupName) {
-    _channel.invokeMethod('setAppGroup', {'groupName': groupName});
+  Future<void> setAppGroup(String? groupName) async {
+    try {
+      await _channel.invokeMethod('setAppGroup', {'groupName': groupName});
+    } on PlatformException catch (e) {
+      throw AltcraftException(code: e.code, message: e.message ?? 'setAppGroup failed');
+    }
   }
 }

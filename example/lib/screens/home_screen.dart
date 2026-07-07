@@ -243,7 +243,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         setState(() => _showTokenActions = false);
                       }),
                       _buildSubButton('HMS', Colors.white, onTap: () {
-                        AltcraftSDK.changePushProviderPriorityList(['ios-hms']);
+                        AltcraftSDK.changePushProviderPriorityList(['ios-huawei']);
                         setState(() => _showTokenActions = false);
                       }),
                     ),
