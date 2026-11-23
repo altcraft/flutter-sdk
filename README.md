@@ -89,9 +89,6 @@ Alternatively, add the umbrella package to use the full SDK:
 dependencies:
   altcraft_sdk: ^2.0.0
 ```
-
-When migrating from `altcraft_sdk` 1.0.0, the Dart API remains backward compatible: existing `AltcraftSDK` methods and models are preserved, while new In-App and authorization methods and module packages have been added. On iOS, the native SDK is integrated via Swift Package Manager (SPM), which must be supported by your app.
-
 ---
 
 ## Authorization Types
