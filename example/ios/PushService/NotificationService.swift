@@ -5,7 +5,9 @@
 //
 //  Copyright © 2025 Altcraft. All rights reserved.
 
-import Altcraft
+import AltcraftCore
+import AltcraftPush
+import Foundation
 import UserNotifications
 
 class NotificationService: UNNotificationServiceExtension {
@@ -15,18 +17,30 @@ class NotificationService: UNNotificationServiceExtension {
     
     /// - important! Set the provider to JWT if you are using JWT authentication.
     let jwtProvider = JWTProvider()
-    
-    override func didReceive(_ request: UNNotificationRequest, withContentHandler contentHandler: @escaping (UNNotificationContent) -> Void) {
-        AltcraftNSE.shared.setAppGroup(groupName: appGroupID)
-        AltcraftNSE.shared.setJWTProvider(provider: jwtProvider)
 
-        if AltcraftNSE.shared.isAltcraftPush(request) {
-            AltcraftNSE.shared.handleNotificationRequest(request: request, contentHandler: contentHandler)
+    /// Processes the incoming push: downloads rich media, applies action
+    /// buttons and delivers the modified content.
+    override func didReceive(
+        _ request: UNNotificationRequest,
+        withContentHandler contentHandler: @escaping (
+            UNNotificationContent
+        ) -> Void
+    ) {
+        AltcraftNSE.setAppGroup(groupName: appGroupID)
+        AltcraftNSE.setJWTProvider(provider: jwtProvider)
+        
+        if AltcraftNSE.isAltcraftPush(request) {
+            AltcraftNSE.handleNotificationRequest(
+                request: request,
+                contentHandler: contentHandler
+            )
         } else {
             contentHandler(request.content)
         }
     }
+    /// Delivers the best-available content when the extension runtime
+    /// is about to expire.
     override func serviceExtensionTimeWillExpire() {
-        AltcraftNSE.shared.serviceExtensionTimeWillExpire()
+        AltcraftNSE.serviceExtensionTimeWillExpire()
     }
 }

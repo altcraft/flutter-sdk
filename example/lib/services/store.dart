@@ -1,17 +1,35 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:altcraft_sdk/src/models/category_data.dart';
+import 'package:altcraft_core/altcraft_core.dart';
 
-// Pre-filled defaults (match RN example)
-const kDefaultApiUrl = '';
-const kDefaultJwt = '';
+// Pre-filled defaults (match AndroidModules example)
+const String? kDefaultApiUrl = null;
+const String? kDefaultJwtAnon = null;
+const String? kDefaultJwtReg = null;
 const kDefaultRToken = '';
 const kMobileEventSid = '';
 const kJwtKey = 'JWT_KEY';
 const kAppGroupSuite = 'group.altcraft.flutter.app';
 
+const kAppId = 'AltcraftMobile';
+const kAppIid = '1.0.0';
+const kAppVer = '1.0.0';
+
+const kEmptyValueUi = '........';
+const kExampleTitle = 'Altcraft';
+const kExampleBody = 'Welcome to the Altcraft Notification Builder!';
+
+const kFcmProvider = 'android-firebase';
+const kHmsProvider = 'android-huawei';
+const kRustoreProvider = 'android-rustore';
+const kApnsProvider = 'ios-apns';
+
+const kSubscribed = 'subscribed';
+const kUnsubscribed = 'unsubscribed';
+const kSuspended = 'suspended';
+
 class ConfigData {
-  final String apiUrl;
+  final String? apiUrl;
   final String? rToken;
   final List<String> providerPriorityList;
 
@@ -41,6 +59,38 @@ String? _parseRToken(dynamic value) {
   if (value == null) return null;
   final s = value.toString().trim();
   return s.isEmpty ? null : s;
+}
+
+class NotificationData {
+  final String title;
+  final String body;
+  final String? smallImageUrl;
+  final String? largeImageUrl;
+  final List<String> buttons;
+
+  const NotificationData({
+    this.title = kExampleTitle,
+    this.body = kExampleBody,
+    this.smallImageUrl,
+    this.largeImageUrl,
+    this.buttons = const [],
+  });
+
+  Map<String, dynamic> toJson() => {
+        'title': title,
+        'body': body,
+        'smallImageUrl': smallImageUrl,
+        'largeImageUrl': largeImageUrl,
+        'buttons': buttons,
+      };
+
+  factory NotificationData.fromJson(Map<String, dynamic> json) => NotificationData(
+        title: json['title'] as String? ?? kExampleTitle,
+        body: json['body'] as String? ?? kExampleBody,
+        smallImageUrl: json['smallImageUrl'] as String?,
+        largeImageUrl: json['largeImageUrl'] as String?,
+        buttons: List<String>.from(json['buttons'] ?? []),
+      );
 }
 
 class Store {
@@ -79,10 +129,20 @@ class Store {
     return prefs.getString('token_provider') ?? '';
   }
 
-  // JWT
-  Future<String> getJwtAnon() async {
+  Future<String?> getTokenUpdateTime() async {
     final prefs = await _getPrefs();
-    return prefs.getString('jwt_anon') ?? kDefaultJwt;
+    return prefs.getString('token_update_time');
+  }
+
+  Future<void> saveTokenUpdateTime(String time) async {
+    final prefs = await _getPrefs();
+    await prefs.setString('token_update_time', time);
+  }
+
+  // JWT
+  Future<String?> getJwtAnon() async {
+    final prefs = await _getPrefs();
+    return prefs.getString('jwt_anon') ?? kDefaultJwtAnon;
   }
 
   Future<void> saveJwtAnon(String jwt) async {
@@ -90,14 +150,20 @@ class Store {
     await prefs.setString('jwt_anon', jwt);
   }
 
-  Future<String> getJwtReg() async {
+  Future<String?> getJwtReg() async {
     final prefs = await _getPrefs();
-    return prefs.getString('jwt_reg') ?? kDefaultJwt;
+    return prefs.getString('jwt_reg') ?? kDefaultJwtReg;
   }
 
   Future<void> saveJwtReg(String jwt) async {
     final prefs = await _getPrefs();
     await prefs.setString('jwt_reg', jwt);
+  }
+
+  Future<void> removeJwts() async {
+    final prefs = await _getPrefs();
+    await prefs.remove('jwt_anon');
+    await prefs.remove('jwt_reg');
   }
 
   Future<bool> getAuthStatus() async {
@@ -108,6 +174,37 @@ class Store {
   Future<void> saveAuthStatus(bool status) async {
     final prefs = await _getPrefs();
     await prefs.setBool('auth_status', status);
+  }
+
+  Future<bool> getExternalAuthStatus() async {
+    final prefs = await _getPrefs();
+    return prefs.getBool('external_auth_status') ?? false;
+  }
+
+  Future<void> saveExternalAuthStatus(bool status) async {
+    final prefs = await _getPrefs();
+    await prefs.setBool('external_auth_status', status);
+  }
+
+  // Subscription statuses
+  Future<String> getAppStatus() async {
+    final prefs = await _getPrefs();
+    return prefs.getString('app_status') ?? kUnsubscribed;
+  }
+
+  Future<void> saveAppStatus(String status) async {
+    final prefs = await _getPrefs();
+    await prefs.setString('app_status', status);
+  }
+
+  Future<String> getInAppStatus() async {
+    final prefs = await _getPrefs();
+    return prefs.getString('inapp_status') ?? kUnsubscribed;
+  }
+
+  Future<void> saveInAppStatus(String status) async {
+    final prefs = await _getPrefs();
+    await prefs.setString('inapp_status', status);
   }
 
   // Subscribe settings
@@ -125,6 +222,18 @@ class Store {
       'subscribe_settings',
       jsonEncode(settings.toJson()),
     );
+  }
+
+  // Notification data (Example screen)
+  Future<NotificationData> getNotificationData() async {
+    final prefs = await _getPrefs();
+    final raw = prefs.getString('notification_data') ?? '{}';
+    return NotificationData.fromJson(jsonDecode(raw) as Map<String, dynamic>);
+  }
+
+  Future<void> saveNotificationData(NotificationData data) async {
+    final prefs = await _getPrefs();
+    await prefs.setString('notification_data', jsonEncode(data.toJson()));
   }
 
   // Clear

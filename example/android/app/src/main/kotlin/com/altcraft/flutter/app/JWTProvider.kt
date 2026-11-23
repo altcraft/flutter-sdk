@@ -1,7 +1,7 @@
 package com.altcraft.flutter.app
 
 import android.app.Application
-import com.altcraft.sdk.interfaces.JWTInterface
+import com.altcraft.sdk.platform.authenticate.external.jwt.JWTInterface
 
 class JWTProvider(private val context: Application) : JWTInterface {
     private val prefs by lazy {

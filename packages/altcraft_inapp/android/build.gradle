@@ -1,0 +1,31 @@
+plugins {
+    id "com.android.library"
+    id "org.jetbrains.kotlin.android"
+}
+
+group = "com.altcraft.flutter.inapp"
+version = "1.0.0"
+
+android {
+    namespace = "com.altcraft.flutter.inapp"
+    compileSdk 35
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+
+    defaultConfig {
+        minSdk 25
+    }
+}
+
+dependencies {
+    implementation project(':altcraft_core')
+    implementation "com.altcraft:android-sdk-inapp:1.0.1"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1"
+}

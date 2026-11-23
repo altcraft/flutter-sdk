@@ -1,6 +1,7 @@
 plugins {
     id "com.android.application"
     id "kotlin-android"
+    id "com.google.gms.google-services"
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id "dev.flutter.flutter-gradle-plugin"
 }
@@ -8,6 +9,13 @@ plugins {
 dependencies {
      implementation(platform("com.google.firebase:firebase-bom:33.4.0"))
      implementation("com.google.firebase:firebase-messaging")
+     // Native Altcraft SDK modules used directly by the application code
+     // (MainApplication registers push providers, JWTProvider implements
+     // the native JWT interface). The Flutter plugin packages resolve
+     // their own native dependencies.
+     implementation("com.altcraft:android-sdk-core:1.0.1")
+     implementation("com.altcraft:android-sdk-inapp:1.0.1")
+     implementation("com.altcraft:android-sdk-push:1.0.1")
 }
 
 flutter {

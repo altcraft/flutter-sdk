@@ -1,35 +1,33 @@
-name: altcraft_sdk
-description: Flutter SDK for Altcraft push notification platform. Supports Android (minSdk 25+) and iOS (13.0+) with native SDK integration.
-version: 1.0.0
-homepage: https://github.com/altcraft/flutter-sdk
-repository: https://github.com/altcraft/flutter-sdk
-issue_tracker: https://github.com/altcraft/flutter-sdk/issues
-documentation: https://guides.altcraft.com/developer-guide/sdk/mobile/flutter/
-topics:
-  - push-notifications
-  - altcraft
-  - messaging
+name: flutter_sdk
+publish_to: none
 
 environment:
   sdk: ">=3.6.0 <4.0.0"
-  flutter: ">=3.27.0"
 
-dependencies:
-  flutter:
-    sdk: flutter
-  plugin_platform_interface: ^2.1.8
+workspace:
+  - packages/altcraft_core
+  - packages/altcraft_push
+  - packages/altcraft_inapp
+  - packages/altcraft_target
+  - packages/altcraft_profile
+  - packages/altcraft_sdk
+  - example
 
 dev_dependencies:
-  flutter_test:
-    sdk: flutter
-  flutter_lints: ^5.0.0
-  mockito: ^5.4.4
+  melos: ^8.0.0
 
-flutter:
-  plugin:
-    platforms:
-      android:
-        package: com.altcraft.flutter
-        pluginClass: AltcraftSdkPlugin
-      ios:
-        pluginClass: AltcraftSdkPlugin
+melos:
+  packages:
+    - packages/*
+    - example
+
+  scripts:
+    analyze:
+      description: Run dart analyze in all packages.
+      exec: dart analyze .
+    test:
+      description: Run flutter tests in all packages.
+      exec: flutter test
+    get:
+      description: Run pub get in all packages.
+      exec: flutter pub get

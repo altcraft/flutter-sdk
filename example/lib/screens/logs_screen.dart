@@ -1,8 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:altcraft_sdk/altcraft_sdk.dart';
-import 'package:altcraft_sdk_example/services/event_bus.dart';
+import 'package:altcraft_sdk_example/services/app_state.dart';
+
+const _kLogBlue = Color(0xFF3678E2);
 
 class LogsScreen extends StatefulWidget {
   const LogsScreen({super.key});
@@ -12,24 +13,27 @@ class LogsScreen extends StatefulWidget {
 }
 
 class _LogsScreenState extends State<LogsScreen> {
-  final List<SdkEvent> _events = [];
   final _scrollController = ScrollController();
-  StreamSubscription<SdkEvent>? _subscription;
 
   @override
   void initState() {
     super.initState();
-    _subscription = EventBus.instance.stream.listen((event) {
-      setState(() => _events.add(event));
-      _scrollToBottom();
-    });
+    AppState.instance.addListener(_onChanged);
+    _scrollToBottom();
   }
 
   @override
   void dispose() {
-    _subscription?.cancel();
+    AppState.instance.removeListener(_onChanged);
     _scrollController.dispose();
     super.dispose();
+  }
+
+  void _onChanged() {
+    if (mounted) {
+      setState(() {});
+      _scrollToBottom();
+    }
   }
 
   void _scrollToBottom() {
@@ -46,54 +50,63 @@ class _LogsScreenState extends State<LogsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_events.isEmpty) {
-      return const Center(child: Text('No events yet', style: TextStyle(color: Color(0xFF999999), fontSize: 14)));
-    }
-
-    return SingleChildScrollView(
-      controller: _scrollController,
-      padding: const EdgeInsets.all(16),
+    final events = AppState.instance.events;
+    return Container(
+      color: Colors.white,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: _events.asMap().entries.map((entry) {
-          final i = entry.key;
-          final ev = entry.value;
-          final ts = ev.timestamp ?? '';
-
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          ts.isEmpty ? '—' : ts,
-                          style: const TextStyle(color: Color(0xFF3678E2), fontSize: 10, fontWeight: FontWeight.w700),
-                        ),
-                        const SizedBox(height: 5),
-                        Text(
-                          ev.message.isEmpty ? 'No message' : ev.message,
-                          style: const TextStyle(color: Colors.black, fontSize: 10),
-                        ),
-                      ],
+        children: [
+          _header(),
+          Expanded(
+            child: events.isEmpty
+                ? const Center(
+                    child: Text('No events yet', style: TextStyle(color: Color(0xFF999999), fontSize: 14)),
+                  )
+                : Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: ListView.separated(
+                      controller: _scrollController,
+                      itemCount: events.length,
+                      separatorBuilder: (_, __) => const Divider(height: 8, thickness: 0.8, color: Color(0xFFCCCCCC)),
+                      itemBuilder: (context, i) {
+                        final ev = events[i];
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                ev.timestamp?.isEmpty ?? true ? '—' : ev.timestamp!,
+                                style: const TextStyle(color: _kLogBlue, fontSize: 10, fontWeight: FontWeight.w700),
+                              ),
+                              const SizedBox(height: 5),
+                              Text(
+                                ev.message.isEmpty ? 'No message' : ev.message,
+                                style: const TextStyle(color: Colors.black, fontSize: 10),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
                     ),
                   ),
-                ],
-              ),
-              if (i < _events.length - 1)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8),
-                  child: Divider(height: 1, thickness: 0.8, color: Color(0xFFCCCCCC)),
-                ),
-            ],
-          );
-        }).toList(),
+          ),
+        ],
       ),
+    );
+  }
+
+  Widget _header() {
+    return Container(
+      height: 60,
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(bottomLeft: Radius.circular(5), bottomRight: Radius.circular(5)),
+        boxShadow: [BoxShadow(color: Color(0x1A000000), blurRadius: 3, offset: Offset(0, 1))],
+      ),
+      alignment: Alignment.centerLeft,
+      padding: const EdgeInsets.only(left: 16),
+      child: Image.asset('assets/ic_altcraft.png', width: 80, height: 20, fit: BoxFit.contain),
     );
   }
 }

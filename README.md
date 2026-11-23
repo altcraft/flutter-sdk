@@ -2,35 +2,140 @@
 
 ![Altcraft SDK Logo](https://guides.altcraft.com/img/logo.svg)
 
-[![pub version](https://img.shields.io/pub/v/altcraft_sdk?style=flat-square)](https://pub.dev/packages/altcraft_sdk)
+[![Dart](https://img.shields.io/badge/Dart-3.6%2B-blue?style=flat-square)](https://dart.dev/)
 [![Flutter](https://img.shields.io/badge/Flutter-3.27%2B-blue?style=flat-square)](https://flutter.dev/)
-[![Platforms](https://img.shields.io/badge/Platforms-Android_%7C_iOS-green?style=flat-square)](#)
-[![Push Providers](https://img.shields.io/badge/Push-Firebase_%7C_APNs_%7C_Huawei_%7C_RuStore-orange?style=flat-square)](#)
+[![Platforms](https://img.shields.io/badge/Platforms-Android_iOS-green?style=flat-square)](#)
+[![pub.dev](https://img.shields.io/pub/v/altcraft_sdk.svg?style=flat-square)](https://pub.dev/packages/altcraft_sdk)
 
-Altcraft Flutter SDK is a bridge to the native **Altcraft Mobile SDK** for Android and iOS. The SDK automates push notification delivery, event submission, request retries, and supports flexible workflows with JWT or role-based tokens.
+Altcraft Flutter SDK is a library for interacting with the **Altcraft Marketing Platform**. It uses a modular architecture in which each component provides a specific set of capabilities.
 
 ---
 
-## Features
+## SDK Modules
 
+### Core
+
+The core is the foundation of the SDK: it connects your application to the Altcraft platform and makes the optional modules available.
+
+* [x] SDK initialization and configuration.
+* [x] Authentication with JWT or a role token (*RToken*).
 * [x] Works with anonymous and registered users; supports multiple profiles on one device (JWT).
-* [x] Push subscription management: push subscribe, push suspend, push unsubscribe.
-* [x] Automatic push token update when it changes.
-* [x] Automatic transmission of notification delivery and open events.
-* [x] Mobile events registration.
-* [x] Update profile fields.
-* [x] Automatic retry of failed requests.
-* [x] Support for push providers: Firebase, Huawei, and RuStore on Android; APNs, Firebase, and Huawei on iOS.
-* [x] Secure requests using JWT and flexible identifier matching.
-* [x] Support for rToken for simple subscription scenarios.
+* [x] Transmission of requests to the platform with automatic retry of failed requests.
+* [x] SDK event stream for monitoring SDK behavior in the app.
+* [x] Native event message catalog per module (`moduleEvents`).
 * [x] SDK data cleanup and background tasks termination.
-* [x] Real-time SDK events via Dart Stream.
+
+### Push
+
+The push module is responsible for push notifications.
+
+* [x] Push subscription management: subscribe, suspend, unsubscribe.
+* [x] Automatic display of push notifications configured in the platform.
+* [x] Push token management: automatic update when the token changes, manual token operations.
+* [x] Automatic transmission of notification delivery and open events.
+* [x] Support for push providers: APNs, Firebase, Huawei, RuStore (platform-dependent).
+* [x] Custom push notification handling and access to all message data fields.
+* [x] Notification permission request for Android 13+ devices.
+* [x] Native event message catalog (`moduleEvents`).
+
+### Target
+
+The target module is responsible for targets (goals): it sends target events to the platform to record goal achievements.
+
+* [x] Sending target events (goal conversions) from the app.
+* [x] Attaching event payloads, matching parameters, profile fields, and channel subscriptions to a target event.
+* [x] Attaching UTM tags to target events for attribution.
+* [x] `sendTarget` entry point matching the native SDKs.
+* [x] Native event message catalog (`moduleEvents`).
+
+### Profile
+
+The profile module is responsible for user profile fields.
+
+* [x] Updating profile fields from the app.
+* [x] Native event message catalog (`moduleEvents`).
+
+### In-App
+
+The in-app module is responsible for in-app campaigns.
+
+* [x] Automatic display of in-app campaigns configured in the platform.
+* [x] In-app subscription management: subscribe, unsubscribe, status retrieval.
+* [x] Placement requests, current screen matching, and custom triggers.
+* [x] JSON in-app campaign emission to an external subscriber.
+* [x] In-app view animation customization (fade, offset, scale per campaign).
+* [x] JSON content subscription (`jsonContent`).
+* [x] Native event message catalog (`moduleEvents`).
 
 ---
 
-## Dependency
+## Dependencies
 
-`altcraft_sdk:1.0.0`
+Altcraft Flutter SDK packages are published on pub.dev. Add the packages used by your application. The Core package is included automatically as a dependency of other SDK packages and does not need to be added separately.
+
+```yaml
+dependencies:
+  altcraft_push: ^1.0.0
+  altcraft_inapp: ^1.0.0
+  altcraft_target: ^1.0.0
+  altcraft_profile: ^1.0.0
+```
+
+If you only need Core, add `altcraft_core: ^1.0.0` directly.
+
+The full SDK is available as a single package. Migrating from `altcraft_sdk` 1.0.0: the Dart API is backward compatible (all `AltcraftSDK` methods and models are preserved, new In-App/auth methods and module packages were added); on iOS the native SDK is now integrated via Swift Package Manager — SPM support must be enabled in your app.
+
+```yaml
+dependencies:
+  altcraft_sdk: ^2.0.0
+```
+
+The packages link the native Altcraft SDK modules automatically:
+
+* Android — Maven Central: `com.altcraft:android-sdk-core`, `android-sdk-push`, `android-sdk-inapp`, `android-sdk-target`, `android-sdk-profile`.
+* iOS — Swift Package Manager: [github.com/altcraft/ios-sdk](https://github.com/altcraft/ios-sdk) with products `AltcraftCore`, `AltcraftPush`, `AltcraftInApp`, `AltcraftTarget`, `AltcraftProfile`.
+
+iOS integration requires [Swift Package Manager support](https://docs.flutter.dev/packages-and-plugins/swift-package-manager) in your app (Flutter 3.24+; enabled by default in recent Flutter versions).
+
+### Modular initialization
+
+Core parameters and module options are configured from Dart through builder
+extensions provided by the module packages:
+
+```dart
+import 'package:altcraft_core/altcraft_core.dart';
+import 'package:altcraft_inapp/altcraft_inapp.dart';
+import 'package:altcraft_push/altcraft_push.dart';
+
+await AltcraftCore.initialize(
+  AltcraftConfigBuilder(apiUrl: 'https://your-api.altcraft.com')
+      .pushConfig(const PushConfig(providerPriority: ['android-firebase']))
+      .inAppConfig(const InAppConfig())
+      .build(),
+);
+```
+
+Importing a module package makes its builder extension available, mirroring
+native module linking; the core module does not depend on concrete modules.
+Without `pushConfig`/`inAppConfig`, the native modules receive empty
+configurations and apply their defaults.
+
+The native SDK is initialized from Dart. Keep `Application.onCreate` only for
+wiring native providers; do not build an `AltcraftConfiguration` there:
+
+```kotlin
+class MainApplication : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        AltcraftSDK.auth.setJWTProvider(JWTProvider(this))
+        AltcraftSDK.push.token.setFCMTokenProvider(FCMProvider())
+    }
+}
+```
+
+The umbrella `altcraft_sdk` package re-exports the builder and the module
+extensions; use `AltcraftCore.initialize` with `AltcraftConfigBuilder` for
+module options.
 
 ---
 
@@ -38,7 +143,7 @@ Altcraft Flutter SDK is a bridge to the native **Altcraft Mobile SDK** for Andro
 
 ### JWT-Authorization (recommended approach)
 
-JWT is added to the header of every request. The SDK requests the current token from the app via the `JWTInterface`.
+JWT is added to the header of every request. The SDK requests the current token from the app via the JWT provider registered in the SDK.
 
 **Advantages:**
 
@@ -55,52 +160,46 @@ Profile lookup is limited to the push token identifier.
 
 **Limitations:**
 
-* The link to a profile may be lost if the push token changes and the change isn't reflected on the platform.
+* The link to a profile may be lost if the push token changes and the change isn’t reflected on the platform.
 * No multi-profile support.
-* It's not possible to register the same user on another device.
+* It’s not possible to register the same user on another device.
 
 ---
 
 ## Requirements
 
-* Flutter 3.27+.
-* Dart 3.6+.
+* Flutter 3.27+ (Dart 3.6+).
 * Android 7.1+ (API 25).
 * iOS 13.0+.
-* Push provider integrated in the host app:
-  * Android: Firebase, Huawei, or RuStore.
-  * iOS: APNs, Firebase, or Huawei.
+* A configured push provider (Firebase, Huawei, RuStore on Android; APNs on iOS) when using the Push module.
 
 ---
 
 ## Documentation
 
-Detailed information on SDK setup, functionality, and usage is available on the Altcraft documentation portal. You can navigate to the required section using the links below:
+Detailed information on SDK setup, functionality, and usage is available on the Altcraft documentation portal:
 
-- [**Quick Start**](https://guides.altcraft.com/en/developer-guide/sdk/mobile/flutter/quick-start)
-- [**SDK Functionality**](https://guides.altcraft.com/en/developer-guide/sdk/mobile/flutter/functionality)
-- [**SDK Configuration**](https://guides.altcraft.com/en/developer-guide/sdk/mobile/flutter/setup)
-- [**Classes and Structures**](https://guides.altcraft.com/en/developer-guide/sdk/mobile/flutter/api)
+- [**Altcraft Flutter SDK**](https://guides.altcraft.com/en/developer-guide/sdk/mobile/flutter/)
 
-**Provider Setup**
+---
 
-**Android**
+## Development
 
-- [Firebase](https://guides.altcraft.com/en/developer-guide/sdk/mobile/android/providers/fcm/)
-- [Huawei](https://guides.altcraft.com/en/developer-guide/sdk/mobile/android/providers/huawei/)
-- [RuStore](https://guides.altcraft.com/en/developer-guide/sdk/mobile/android/providers/rustore/)
+This repository is a Melos-managed monorepo:
 
-**iOS**
+```bash
+dart pub global activate melos
+melos bootstrap
 
-- [APNs](https://guides.altcraft.com/en/developer-guide/sdk/mobile/ios/providers/apns/)
-- [Firebase](https://guides.altcraft.com/en/developer-guide/sdk/mobile/ios/providers/firebase/)
-- [Huawei](https://guides.altcraft.com/en/developer-guide/sdk/mobile/ios/providers/huawei/)
+melos run analyze   # dart analyze in all packages
+melos run test      # flutter test in all packages
+```
+
+The [example](example) app consumes the SDK through the module packages and demonstrates the full API, including modular initialization.
 
 ---
 
 ## License
-
-This package is distributed under the Altcraft End User License Agreement (EULA). See the [LICENSE](LICENSE) file for the full license text.
 
 ### EULA
 
@@ -109,7 +208,7 @@ END USER LICENSE AGREEMENT
 Copyright © 2026 Altcraft LLC. All rights reserved.
 
 1. LICENSE GRANT
-   This agreement grants you certain rights to use the Altcraft Mobile SDK (hereinafter referred to as the "Software").
+   This agreement grants you certain rights to use the Altcraft Mobile SDK (hereinafter referred to as the “Software”).
    All rights not expressly granted by this agreement remain with the copyright holder.
 
 2. USE
@@ -122,7 +221,7 @@ Copyright © 2026 Altcraft LLC. All rights reserved.
    Publication of modified Software requires prior written permission from the copyright holder.
 
 5. DISCLAIMER OF WARRANTIES
-   The Software is provided "as is," without any warranties, express or implied, including but not limited to
+   The Software is provided “as is,” without any warranties, express or implied, including but not limited to
    warranties of merchantability, fitness for a particular purpose, and non-infringement of third-party rights.
 
 6. LIMITATION OF LIABILITY
@@ -140,15 +239,26 @@ Copyright © 2026 Altcraft LLC. All rights reserved.
 
 ### Third-party libraries and licenses
 
-  **Apache License 2.0**
-Licensed under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0).
-You may obtain a copy of the License at https://www.apache.org/licenses/LICENSE-2.0
+**Apache License 2.0**
+Licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
+You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
 
-* [Flutter](https://github.com/flutter/flutter)
-* [Dart](https://dart.dev/)
+* [Kotlin](https://github.com/JetBrains/kotlin)
+* [KotlinX Serialization](https://github.com/Kotlin/kotlinx.serialization)
+* [KotlinX Coroutines](https://github.com/Kotlin/kotlinx.coroutines)
+* [Retrofit](https://github.com/square/retrofit)
+* [OkHttp](https://github.com/square/okhttp)
+* [AndroidX Annotation](https://developer.android.com/jetpack/androidx/releases/annotation)
+* [AndroidX Core](https://developer.android.com/jetpack/androidx/releases/core)
+* [AndroidX Room](https://developer.android.com/jetpack/androidx/releases/room)
+* [WorkManager](https://developer.android.com/jetpack/androidx/releases/work)
+* [AndroidX Lifecycle](https://developer.android.com/jetpack/androidx/releases/lifecycle)
+* [AndroidX Startup](https://developer.android.com/jetpack/androidx/releases/startup)
+* [AndroidX DataStore](https://developer.android.com/jetpack/androidx/releases/datastore)
 
-**MIT License**
+**Other licenses:**
 
-* [plugin_platform_interface](https://pub.dev/packages/plugin_platform_interface)
-
-
+* [Flutter](https://github.com/flutter/flutter) — **BSD-3-Clause**
+* [Glide](https://github.com/bumptech/glide) — **BSD-2-Clause**
+* [JUnit 4](https://junit.org/junit4/) — **EPL-1.0 (Eclipse Public License 1.0)**
+* [Google Play Services Ads Identifier](https://developers.google.com/android/reference/com/google/android/gms/ads/identifier/AdvertisingIdClient) — subject to [Google Play Services SDK License Agreement](https://developers.google.com/terms)

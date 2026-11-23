@@ -1,0 +1,41 @@
+name: altcraft_core
+description: >-
+  Core module of the Altcraft Flutter SDK: SDK initialization, native SDK
+  events, JWT authentication, and data management. Required by all other
+  Altcraft module packages.
+version: 1.0.0
+homepage: https://github.com/altcraft/flutter-sdk
+repository: https://github.com/altcraft/flutter-sdk/tree/main/packages/altcraft_core
+issue_tracker: https://github.com/altcraft/flutter-sdk/issues
+documentation: https://guides.altcraft.com/developer-guide/sdk/mobile/flutter/
+topics:
+  - push-notifications
+  - altcraft
+  - messaging
+
+environment:
+  sdk: ">=3.6.0 <4.0.0"
+  flutter: ">=3.27.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  plugin_platform_interface: ^2.1.8
+  meta: ^1.15.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  mockito: ^5.4.4
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: com.altcraft.flutter.core
+        pluginClass: AltcraftCorePlugin
+      ios:
+        pluginClass: AltcraftCorePlugin
+
+resolution: workspace

@@ -1,0 +1,45 @@
+name: altcraft_sdk
+description: >-
+  Flutter SDK for the Altcraft push notification platform. Umbrella package
+  that provides the full AltcraftSDK API and complete SDK initialization.
+  Supports Android (minSdk 25+) and iOS (13.0+) with native SDK integration.
+version: 2.0.0
+homepage: https://github.com/altcraft/flutter-sdk
+repository: https://github.com/altcraft/flutter-sdk/tree/main/packages/altcraft_sdk
+issue_tracker: https://github.com/altcraft/flutter-sdk/issues
+documentation: https://guides.altcraft.com/developer-guide/sdk/mobile/flutter/
+topics:
+  - push-notifications
+  - altcraft
+  - messaging
+
+environment:
+  sdk: ">=3.6.0 <4.0.0"
+  flutter: ">=3.27.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  plugin_platform_interface: ^2.1.8
+  altcraft_core: ^1.0.0
+  altcraft_push: ^1.0.0
+  altcraft_inapp: ^1.0.0
+  altcraft_target: ^1.0.0
+  altcraft_profile: ^1.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  mockito: ^5.4.4
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: com.altcraft.flutter
+        pluginClass: AltcraftSdkPlugin
+      ios:
+        pluginClass: AltcraftSdkPlugin
+
+resolution: workspace

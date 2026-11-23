@@ -1,6 +1,6 @@
 package com.altcraft.flutter.app
 
-import com.altcraft.sdk.interfaces.FCMInterface
+import com.altcraft.sdk.push.platform.token.provider.FCMInterface
 import com.google.firebase.Firebase
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.messaging

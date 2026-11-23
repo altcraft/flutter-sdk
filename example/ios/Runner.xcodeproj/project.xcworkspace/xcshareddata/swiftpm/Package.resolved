@@ -1,0 +1,14 @@
+{
+  "pins" : [
+    {
+      "identity" : "ios-sdk",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/altcraft/ios-sdk",
+      "state" : {
+        "revision" : "ea19aa95403b3c36ef074aefff7734141ebfc426",
+        "version" : "2.0.1"
+      }
+    }
+  ],
+  "version" : 2
+}

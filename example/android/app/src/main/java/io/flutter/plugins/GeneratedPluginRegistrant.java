@@ -16,14 +16,44 @@ public final class GeneratedPluginRegistrant {
   private static final String TAG = "GeneratedPluginRegistrant";
   public static void registerWith(@NonNull FlutterEngine flutterEngine) {
     try {
-      flutterEngine.getPlugins().add(new com.altcraft.flutter.AltcraftSdkPlugin());
+      flutterEngine.getPlugins().add(new com.altcraft.flutter.core.AltcraftCorePlugin());
     } catch (Exception e) {
-      Log.e(TAG, "Error registering plugin altcraft_sdk, com.altcraft.flutter.AltcraftSdkPlugin", e);
+      Log.e(TAG, "Error registering plugin altcraft_core, com.altcraft.flutter.core.AltcraftCorePlugin", e);
+    }
+    try {
+      flutterEngine.getPlugins().add(new com.altcraft.flutter.inapp.AltcraftInAppPlugin());
+    } catch (Exception e) {
+      Log.e(TAG, "Error registering plugin altcraft_inapp, com.altcraft.flutter.inapp.AltcraftInAppPlugin", e);
+    }
+    try {
+      flutterEngine.getPlugins().add(new com.altcraft.flutter.profile.AltcraftProfilePlugin());
+    } catch (Exception e) {
+      Log.e(TAG, "Error registering plugin altcraft_profile, com.altcraft.flutter.profile.AltcraftProfilePlugin", e);
+    }
+    try {
+      flutterEngine.getPlugins().add(new com.altcraft.flutter.push.AltcraftPushPlugin());
+    } catch (Exception e) {
+      Log.e(TAG, "Error registering plugin altcraft_push, com.altcraft.flutter.push.AltcraftPushPlugin", e);
+    }
+    try {
+      flutterEngine.getPlugins().add(new com.altcraft.flutter.target.AltcraftTargetPlugin());
+    } catch (Exception e) {
+      Log.e(TAG, "Error registering plugin altcraft_target, com.altcraft.flutter.target.AltcraftTargetPlugin", e);
+    }
+    try {
+      flutterEngine.getPlugins().add(new com.github.dart_lang.jni.JniPlugin());
+    } catch (Exception e) {
+      Log.e(TAG, "Error registering plugin jni, com.github.dart_lang.jni.JniPlugin", e);
     }
     try {
       flutterEngine.getPlugins().add(new io.flutter.plugins.sharedpreferences.SharedPreferencesPlugin());
     } catch (Exception e) {
       Log.e(TAG, "Error registering plugin shared_preferences_android, io.flutter.plugins.sharedpreferences.SharedPreferencesPlugin", e);
+    }
+    try {
+      flutterEngine.getPlugins().add(new io.flutter.plugins.urllauncher.UrlLauncherPlugin());
+    } catch (Exception e) {
+      Log.e(TAG, "Error registering plugin url_launcher_android, io.flutter.plugins.urllauncher.UrlLauncherPlugin", e);
     }
   }
 }

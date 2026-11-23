@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:altcraft_sdk/altcraft_sdk.dart';
+import 'package:altcraft_core/altcraft_core.dart';
 
 /// Central event bus — all SDK events flow through here.
 /// Both HomeScreen and LogsScreen listen to this single source.
@@ -15,7 +15,7 @@ class EventBus {
 
   /// Start listening to the native SDK and forward events to all subscribers.
   void init() {
-    AltcraftSDK.subscribeToEvents().listen(_controller.add);
+    AltcraftCore.subscribeToEvents().listen(_controller.add);
   }
 
   /// Add an event directly (for testing or internal use).

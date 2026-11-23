@@ -7,7 +7,7 @@
 //  Copyright © 2025 Altcraft. All rights reserved.
 
 import Foundation
-import Altcraft
+import AltcraftPush
 
 class APNSProvider: APNSInterface {
     

@@ -4,14 +4,25 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: ">=3.0.0 <4.0.0"
+  sdk: ">=3.6.0 <4.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  altcraft_sdk:
-    path: ../
+  altcraft_core:
+    path: ../packages/altcraft_core
+  altcraft_push:
+    path: ../packages/altcraft_push
+  altcraft_inapp:
+    path: ../packages/altcraft_inapp
+  altcraft_target:
+    path: ../packages/altcraft_target
+  altcraft_profile:
+    path: ../packages/altcraft_profile
   shared_preferences: ^2.3.3
+  url_launcher: 6.2.6
+  url_launcher_android: 6.3.10
+  url_launcher_ios: 6.4.2
   http: ^1.2.2
 
 dev_dependencies:
@@ -22,5 +33,8 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/tabs/
-    - assets/ic_altcraft.png
+    - assets/
+  config:
+    enable-swift-package-manager: true
+
+resolution: workspace
