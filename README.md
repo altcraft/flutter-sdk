@@ -15,10 +15,10 @@ Altcraft Flutter SDK is a library for interacting with the **Altcraft Marketing 
 
 ### Core
 
-The core is the foundation of the SDK: it connects your application to the Altcraft platform and makes the optional modules available.
+The Core module is the foundation of the SDK: it connects your application to the Altcraft platform and makes the optional modules available.
 
 * [x] SDK initialization and configuration.
-* [x] Authentication with JWT or a role token (*RToken*).
+* [x] Authentication with JWT or a role token (*rToken*).
 * [x] Works with anonymous and registered users; supports multiple profiles on one device (JWT).
 * [x] Transmission of requests to the platform with automatic retry of failed requests.
 * [x] SDK event stream for monitoring SDK behavior in the app.
@@ -40,7 +40,7 @@ The push module is responsible for push notifications.
 
 ### Target
 
-The target module is responsible for targets (goals): it sends target events to the platform to record goal achievements.
+The target module is responsible for mobile events: it sends target events to the platform to record goal achievements.
 
 * [x] Sending target events (goal conversions) from the app.
 * [x] Attaching event payloads, matching parameters, profile fields, and channel subscriptions to a target event.
@@ -71,7 +71,9 @@ The in-app module is responsible for in-app campaigns.
 
 ## Dependencies
 
-Altcraft Flutter SDK packages are published on pub.dev. Add the packages used by your application. The Core package is included automatically as a dependency of other SDK packages and does not need to be added separately.
+Altcraft Flutter SDK modules are distributed via pub.dev. Add the modules used by your application. The Core package is included automatically as a dependency of other SDK modules and does not need to be added separately.
+
+**pub.dev:**
 
 ```yaml
 dependencies:
@@ -81,61 +83,16 @@ dependencies:
   altcraft_profile: ^1.0.0
 ```
 
-If you only need Core, add `altcraft_core: ^1.0.0` directly.
+If you only need Core, add the `altcraft_core` package directly (`altcraft_core: ^1.0.0`).
 
-The full SDK is available as a single package. Migrating from `altcraft_sdk` 1.0.0: the Dart API is backward compatible (all `AltcraftSDK` methods and models are preserved, new In-App/auth methods and module packages were added); on iOS the native SDK is now integrated via Swift Package Manager — SPM support must be enabled in your app.
+Alternatively, add the umbrella package to use the full SDK:
 
 ```yaml
 dependencies:
   altcraft_sdk: ^2.0.0
 ```
 
-The packages link the native Altcraft SDK modules automatically:
-
-* Android — Maven Central: `com.altcraft:android-sdk-core`, `android-sdk-push`, `android-sdk-inapp`, `android-sdk-target`, `android-sdk-profile`.
-* iOS — Swift Package Manager: [github.com/altcraft/ios-sdk](https://github.com/altcraft/ios-sdk) with products `AltcraftCore`, `AltcraftPush`, `AltcraftInApp`, `AltcraftTarget`, `AltcraftProfile`.
-
-iOS integration requires [Swift Package Manager support](https://docs.flutter.dev/packages-and-plugins/swift-package-manager) in your app (Flutter 3.24+; enabled by default in recent Flutter versions).
-
-### Modular initialization
-
-Core parameters and module options are configured from Dart through builder
-extensions provided by the module packages:
-
-```dart
-import 'package:altcraft_core/altcraft_core.dart';
-import 'package:altcraft_inapp/altcraft_inapp.dart';
-import 'package:altcraft_push/altcraft_push.dart';
-
-await AltcraftCore.initialize(
-  AltcraftConfigBuilder(apiUrl: 'https://your-api.altcraft.com')
-      .pushConfig(const PushConfig(providerPriority: ['android-firebase']))
-      .inAppConfig(const InAppConfig())
-      .build(),
-);
-```
-
-Importing a module package makes its builder extension available, mirroring
-native module linking; the core module does not depend on concrete modules.
-Without `pushConfig`/`inAppConfig`, the native modules receive empty
-configurations and apply their defaults.
-
-The native SDK is initialized from Dart. Keep `Application.onCreate` only for
-wiring native providers; do not build an `AltcraftConfiguration` there:
-
-```kotlin
-class MainApplication : Application() {
-    override fun onCreate() {
-        super.onCreate()
-        AltcraftSDK.auth.setJWTProvider(JWTProvider(this))
-        AltcraftSDK.push.token.setFCMTokenProvider(FCMProvider())
-    }
-}
-```
-
-The umbrella `altcraft_sdk` package re-exports the builder and the module
-extensions; use `AltcraftCore.initialize` with `AltcraftConfigBuilder` for
-module options.
+When migrating from `altcraft_sdk` 1.0.0, the Dart API remains backward compatible: existing `AltcraftSDK` methods and models are preserved, while new In-App and authorization methods and module packages have been added. On iOS, the native SDK is integrated via Swift Package Manager (SPM), which must be supported by your app.
 
 ---
 
@@ -143,7 +100,7 @@ module options.
 
 ### JWT-Authorization (recommended approach)
 
-JWT is added to the header of every request. The SDK requests the current token from the app via the JWT provider registered in the SDK.
+JWT is added to the header of every request. The SDK requests the current token from the app via the registered JWT provider.
 
 **Advantages:**
 
@@ -180,22 +137,6 @@ Profile lookup is limited to the push token identifier.
 Detailed information on SDK setup, functionality, and usage is available on the Altcraft documentation portal:
 
 - [**Altcraft Flutter SDK**](https://guides.altcraft.com/en/developer-guide/sdk/mobile/flutter/)
-
----
-
-## Development
-
-This repository is a Melos-managed monorepo:
-
-```bash
-dart pub global activate melos
-melos bootstrap
-
-melos run analyze   # dart analyze in all packages
-melos run test      # flutter test in all packages
-```
-
-The [example](example) app consumes the SDK through the module packages and demonstrates the full API, including modular initialization.
 
 ---
 
