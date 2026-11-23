@@ -32,8 +32,7 @@ final class ProfileModuleEvents {
       });
 
   /// Event messages resolved for the current platform.
-  static final Map<String, String> values =
-      valuesFor(defaultTargetPlatform);
+  static final Map<String, String> values = valuesFor(defaultTargetPlatform);
 
   /// Message of the `requestDataIsNull` event.
   String get requestDataIsNull => values['requestDataIsNull']!;
@@ -48,13 +47,16 @@ final class ProfileModuleEvents {
   String get requestFailed => values['requestFailed']!;
 
   /// Message of the `profileUpdateRequestDataIsNil` event.
-  String get profileUpdateRequestDataIsNil => values['profileUpdateRequestDataIsNil']!;
+  String get profileUpdateRequestDataIsNil =>
+      values['profileUpdateRequestDataIsNil']!;
 
   /// Message of the `profileUpdateRequestSuccessful` event.
-  String get profileUpdateRequestSuccessful => values['profileUpdateRequestSuccessful']!;
+  String get profileUpdateRequestSuccessful =>
+      values['profileUpdateRequestSuccessful']!;
 
   /// Message of the `profileUpdateRequestFailed` event.
-  String get profileUpdateRequestFailed => values['profileUpdateRequestFailed']!;
+  String get profileUpdateRequestFailed =>
+      values['profileUpdateRequestFailed']!;
 }
 
 /// Profile module events resolved for the current platform.

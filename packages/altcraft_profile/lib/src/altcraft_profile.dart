@@ -20,7 +20,8 @@ class AltcraftProfile {
   /// The current platform interface implementation.
   ///
   /// Can be overridden for testing with a mock implementation.
-  static AltcraftProfilePlatformInterface _platform = MethodChannelAltcraftProfile();
+  static AltcraftProfilePlatformInterface _platform =
+      MethodChannelAltcraftProfile();
 
   static AltcraftProfilePlatformInterface get platform => _platform;
 

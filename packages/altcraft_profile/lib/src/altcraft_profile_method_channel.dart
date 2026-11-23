@@ -22,7 +22,8 @@ class MethodChannelAltcraftProfile extends AltcraftProfilePlatformInterface {
         'skipTriggers': skipTriggers,
       });
     } on PlatformException catch (e) {
-      throw AltcraftException(code: e.code, message: e.message ?? 'updateProfileFields failed');
+      throw AltcraftException(
+          code: e.code, message: e.message ?? 'updateProfileFields failed');
     }
   }
 }
