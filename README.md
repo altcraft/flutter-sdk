@@ -62,9 +62,7 @@ The in-app module is responsible for in-app campaigns.
 * [x] Automatic display of in-app campaigns configured in the platform.
 * [x] In-app subscription management: subscribe, unsubscribe, status retrieval.
 * [x] Placement requests, current screen matching, and custom triggers.
-* [x] JSON in-app campaign emission to an external subscriber.
 * [x] In-app view animation customization (fade, offset, scale per campaign).
-* [x] JSON content subscription (`jsonContent`).
 * [x] Native event message catalog (`moduleEvents`).
 
 ---
