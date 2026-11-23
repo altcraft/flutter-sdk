@@ -3,11 +3,8 @@
 ![Altcraft SDK Logo](https://guides.altcraft.com/img/logo.svg)
 
 [![Dart](https://img.shields.io/badge/Dart-3.6%2B-blue?style=flat-square)](https://dart.dev/)
-
 [![Flutter](https://img.shields.io/badge/Flutter-3.27%2B-blue?style=flat-square)](https://flutter.dev/)
-
 [![Platforms](https://img.shields.io/badge/Platforms-Android_iOS-green?style=flat-square)](#)
-
 [![pub.dev](https://img.shields.io/pub/v/altcraft_sdk.svg?style=flat-square)](https://pub.dev/packages/altcraft_sdk)
 
 Altcraft Flutter SDK is a library for interacting with the **Altcraft Marketing Platform**. The **Full SDK** package combines all modular components into a single dependency.
